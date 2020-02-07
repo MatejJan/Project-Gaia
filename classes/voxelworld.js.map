@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "voxelworld.js",
+  "sourceRoot": "",
+  "sources": [
+    "voxelworld.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;EAAA;EAEM,WAAW,CAAC;IACH,oBAAC,OAAD;MAAC,IAAC,CAAA,UAAD;IAAD;;yBAEb,2BAAA,GAA6B,SAAC,CAAD,EAAI,CAAJ,EAAO,CAAP;aAC3B,CAAA,GAAI,CAAA,GAAI,IAAC,CAAA,OAAO,CAAC,KAAjB,GAAyB,CAAA,GAAI,IAAC,CAAA,OAAO,CAAC,KAAb,GAAqB,IAAC,CAAA,OAAO,CAAC;IAD5B;;;;;AAL/B"
+}
