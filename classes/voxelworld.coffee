@@ -77,7 +77,7 @@ class ProjectGaia.VoxelWorld
 
   @load: (loadingManager) ->
     @environmentModel = new ProjectGaia.VoxelModel
-      url: 'content/64x64test.vox'
+      url: 'content/32x32materials.vox'
       loadingManager: loadingManager
 
   constructor: (@options) ->
