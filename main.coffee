@@ -1,3 +1,5 @@
+'use strict'
+
 projectGaia = new ProjectGaia
 
 totalTime = 0

@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "materials.js",
+  "sourceRoot": "",
+  "sources": [
+    "materials.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;EAAA;EAEM,WAAW,CAAC;;;IAChB,SAAC,CAAA,eAAD,GAAkB,SAAA;aAChB;QAAA,eAAA,EACE;UAAA,KAAA,EAAO,CAAP;SADF;QAEA,aAAA,EACE;UAAA,KAAA,EAAO,CAAP;SAHF;;IADgB;;IAMlB,SAAC,CAAA,kBAAD,GAAqB,SAAC,QAAD,EAAW,QAAX;MACnB,QAAQ,CAAC,eAAe,CAAC,KAAzB,GAAiC,QAAQ,CAAC;aAC1C,QAAQ,CAAC,aAAa,CAAC,KAAvB,GAA+B,QAAQ,CAAC;IAFrB;;;;;AATvB"
+}

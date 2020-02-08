@@ -1,3 +1,5 @@
+'use strict'
+
 class ProjectGaia.Sides
   @Right: 0
   @Left: 1

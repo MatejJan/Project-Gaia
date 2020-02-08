@@ -16,7 +16,7 @@ class ProjectGaia.VoxelMesh extends THREE.Mesh
     vertexArraysLength = blocksCount * verticesPerBlock * 3
     positionsArray = new Float32Array vertexArraysLength
     normalsArray = new Float32Array vertexArraysLength
-    blocksCoordinatesArray = new Float32Array vertexArraysLength
+    blockPositionsArray = new Uint8Array vertexArraysLength
 
     for z in [0...depth]
       for y in [0...height]
@@ -35,11 +35,9 @@ class ProjectGaia.VoxelMesh extends THREE.Mesh
                 normalsArray[index + 1] = normal.y
                 normalsArray[index + 2] = normal.z
 
-                blocksCoordinatesArray[index] = x
-                blocksCoordinatesArray[index + 1] = y
-                blocksCoordinatesArray[index + 2] = z
-
-    #console.log "v", positionsArray, normalsArray, blocksCoordinatesArray
+                blockPositionsArray[index] = x
+                blockPositionsArray[index + 1] = y
+                blockPositionsArray[index + 2] = z
 
     indicesArrayLength = blocksCount * indicesPerBlock
     indicesArray = new Uint32Array indicesArrayLength
@@ -61,29 +59,25 @@ class ProjectGaia.VoxelMesh extends THREE.Mesh
             indicesArray[index + 4] = verticesOffset + 3
             indicesArray[index + 5] = verticesOffset + 2
 
-    #console.log "i", indicesArray
-
     geometry = new THREE.BufferGeometry()
 
     positionAttribute = new THREE.BufferAttribute positionsArray, 3
     normalAttribute = new THREE.BufferAttribute normalsArray, 3
-    blockCoordinatesAttribute = new THREE.BufferAttribute blocksCoordinatesArray, 3
+    blockPositionAttribute = new THREE.BufferAttribute blockPositionsArray, 3
 
     geometry.setAttribute "position", positionAttribute
     geometry.setAttribute "normal", normalAttribute
-    geometry.setAttribute "blockCoordinates", blockCoordinatesAttribute
+    geometry.setAttribute "blockPosition", blockPositionAttribute
 
     indicesAttribute = new THREE.BufferAttribute indicesArray, 1
     geometry.setIndex indicesAttribute
 
-    material = new @constructor.Material
-
-    super geometry, material
+    super geometry, @options.material
 
   createVertexForSide: (array, index, side, x, y, z, i, j) ->
     rx = x
     ry = y
-    rz = -z
+    rz = z
 
     switch side
       when ProjectGaia.Sides.Right
@@ -111,8 +105,3 @@ class ProjectGaia.VoxelMesh extends THREE.Mesh
     array[index] = rx
     array[index + 1] = ry
     array[index + 2] = rz
-
-  class @Material extends THREE.MeshLambertMaterial
-    constructor: ->
-      super
-        color: new THREE.Color 1, 1, 1

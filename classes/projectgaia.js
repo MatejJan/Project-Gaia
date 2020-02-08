@@ -5,37 +5,119 @@
 
   ProjectGaia = (function() {
     function ProjectGaia() {
-      var ambientLight, directionalLight, worldSize;
+      var ambientLight, directionalLight, shadowCameraHalfSize;
       this.renderer = new THREE.WebGLRenderer;
       this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      this.renderer.setClearColor(new THREE.Color(0.05, 0.05, 0.1), 1);
       document.body.appendChild(this.renderer.domElement);
       this.scene = new THREE.Scene;
       ambientLight = new THREE.AmbientLight(0x404060);
       this.scene.add(ambientLight);
-      directionalLight = new THREE.DirectionalLight(0xffffdd, 0.5);
-      directionalLight.position.set(1, 5, 2);
+      directionalLight = new THREE.DirectionalLight(0xffffdd, 1);
+      directionalLight.castShadow = true;
+      shadowCameraHalfSize = 50;
+      directionalLight.shadow.camera.left = -shadowCameraHalfSize;
+      directionalLight.shadow.camera.right = shadowCameraHalfSize;
+      directionalLight.shadow.camera.top = shadowCameraHalfSize;
+      directionalLight.shadow.camera.bottom = -shadowCameraHalfSize;
+      directionalLight.shadow.camera.near = 10;
+      directionalLight.shadow.camera.far = 150;
+      directionalLight.shadow.mapSize.width = 4096;
+      directionalLight.shadow.mapSize.height = 4096;
+      directionalLight.shadow.bias = -0.001;
+      directionalLight.position.set(10, 50, 20);
       this.scene.add(directionalLight);
-      worldSize = {
-        width: 32,
-        height: 32,
-        depth: 32
-      };
-      this.voxelWorld = new ProjectGaia.VoxelWorld(worldSize);
-      this.voxelMesh = new ProjectGaia.VoxelMesh(_.extend({
-        world: this.voxelWorld
-      }, worldSize));
-      this.voxelMesh.position.set(-worldSize.width / 2, -worldSize.height / 2, worldSize.depth / 2);
-      this.scene.add(this.voxelMesh);
-      this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 400);
-      this.camera.position.z = worldSize.depth * 2;
-      this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+      this.loadingManager = new THREE.LoadingManager((function(_this) {
+        return function() {
+          console.log("Loading finished!");
+          return _this.initialize();
+        };
+      })(this), (function(_this) {
+        return function(url, itemsLoaded, itemsTotal) {
+          return console.log("Loaded " + itemsLoaded + " of " + itemsTotal);
+        };
+      })(this), (function(_this) {
+        return function(url) {
+          return console.log("Loading error with", url);
+        };
+      })(this));
+      ProjectGaia.Materials.VoxelWorld.load(this.loadingManager);
+      ProjectGaia.Materials.BlocksInformation.load(this.loadingManager);
     }
 
+    ProjectGaia.prototype.initialize = function() {
+      var ground, groundGeometry, groundMaterial, sideLength, worldSizeVector;
+      sideLength = 32;
+      this.worldSize = {
+        width: sideLength,
+        height: sideLength,
+        depth: sideLength
+      };
+      groundGeometry = new THREE.PlaneBufferGeometry(this.worldSize.width + 100, this.worldSize.depth + 100);
+      groundMaterial = new THREE.MeshLambertMaterial({
+        color: 0x808080
+      });
+      ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      ground.receiveShadow = true;
+      ground.position.y = -this.worldSize.height / 2;
+      ground.rotation.x = -Math.PI / 2;
+      this.scene.add(ground);
+      worldSizeVector = new THREE.Vector3(this.worldSize.width, this.worldSize.height, this.worldSize.depth);
+      this.voxelWorld = new ProjectGaia.VoxelWorld(this.worldSize);
+      this.materialsDataTexture = new ProjectGaia.MaterialsDataTexture;
+      this.blocksInformationTexture = new ProjectGaia.ComputedTexture({
+        renderer: this.renderer,
+        initializationTexture: this.voxelWorld.startingBlocksInformationTexture,
+        mapName: 'blocksInformation'
+      });
+      this.blocksInformationMaterial = new ProjectGaia.Materials.BlocksInformation({
+        materialsDataTexture: this.materialsDataTexture,
+        blocksInformationTexture: this.blocksInformationTexture,
+        worldSizeVector: worldSizeVector
+      });
+      this.blocksInformationTexture.setMaterial(this.blocksInformationMaterial);
+      this.voxelWorldMaterial = new ProjectGaia.Materials.VoxelWorld({
+        materialsDataTexture: this.materialsDataTexture,
+        blocksInformationTexture: this.blocksInformationTexture,
+        worldSizeVector: worldSizeVector
+      });
+      this.voxelWorldDepthMaterial = new ProjectGaia.Materials.VoxelWorld.Depth({
+        blocksInformationTexture: this.blocksInformationTexture,
+        worldSizeVector: worldSizeVector
+      });
+      this.voxelMesh = new ProjectGaia.VoxelMesh(_.extend({
+        world: this.voxelWorld,
+        material: this.voxelWorldMaterial
+      }, this.worldSize));
+      this.voxelMesh.castShadow = true;
+      this.voxelMesh.receiveShadow = true;
+      this.voxelMesh.customDepthMaterial = this.voxelWorldDepthMaterial;
+      this.voxelMesh.position.set(-this.worldSize.width / 2, -this.worldSize.height / 2, -this.worldSize.depth / 2);
+      this.scene.add(this.voxelMesh);
+      this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 400);
+      this.camera.position.z = this.worldSize.depth * 2;
+      this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+      return this.initialized = true;
+    };
+
     ProjectGaia.prototype.update = function(gameTime) {
-      return this.controls.update();
+      if (!this.initialized) {
+        return;
+      }
+      this.blocksInformationMaterial.update(gameTime);
+      this.blocksInformationTexture.update(gameTime);
+      this.voxelWorldMaterial.update(gameTime);
+      this.voxelWorldDepthMaterial.update(gameTime);
+      return this.controls.update(gameTime);
     };
 
     ProjectGaia.prototype.draw = function(gameTime) {
+      if (!this.initialized) {
+        return;
+      }
+      this.renderer.setRenderTarget(null);
       return this.renderer.render(this.scene, this.camera);
     };
 
