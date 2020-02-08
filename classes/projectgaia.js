@@ -27,7 +27,7 @@
       directionalLight.shadow.mapSize.width = 4096;
       directionalLight.shadow.mapSize.height = 4096;
       directionalLight.shadow.bias = -0.001;
-      directionalLight.position.set(10, 50, 20);
+      directionalLight.position.set(30, 50, 40);
       this.scene.add(directionalLight);
       this.loadingManager = new THREE.LoadingManager((function(_this) {
         return function() {
@@ -45,15 +45,16 @@
       })(this));
       ProjectGaia.Materials.VoxelWorld.load(this.loadingManager);
       ProjectGaia.Materials.BlocksInformation.load(this.loadingManager);
+      ProjectGaia.VoxelWorld.load(this.loadingManager);
     }
 
     ProjectGaia.prototype.initialize = function() {
-      var ground, groundGeometry, groundMaterial, sideLength, worldSizeVector;
-      sideLength = 32;
+      var ground, groundGeometry, groundMaterial, model, worldSizeVector;
+      model = ProjectGaia.VoxelWorld.environmentModel;
       this.worldSize = {
-        width: sideLength,
-        height: sideLength,
-        depth: sideLength
+        width: model.width,
+        height: model.height,
+        depth: model.depth
       };
       groundGeometry = new THREE.PlaneBufferGeometry(this.worldSize.width + 100, this.worldSize.depth + 100);
       groundMaterial = new THREE.MeshLambertMaterial({
@@ -61,7 +62,6 @@
       });
       ground = new THREE.Mesh(groundGeometry, groundMaterial);
       ground.receiveShadow = true;
-      ground.position.y = -this.worldSize.height / 2;
       ground.rotation.x = -Math.PI / 2;
       this.scene.add(ground);
       worldSizeVector = new THREE.Vector3(this.worldSize.width, this.worldSize.height, this.worldSize.depth);
@@ -94,10 +94,10 @@
       this.voxelMesh.castShadow = true;
       this.voxelMesh.receiveShadow = true;
       this.voxelMesh.customDepthMaterial = this.voxelWorldDepthMaterial;
-      this.voxelMesh.position.set(-this.worldSize.width / 2, -this.worldSize.height / 2, -this.worldSize.depth / 2);
+      this.voxelMesh.position.set(-this.worldSize.width / 2, 0, -this.worldSize.depth / 2);
       this.scene.add(this.voxelMesh);
-      this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 400);
-      this.camera.position.z = this.worldSize.depth * 2;
+      this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 400);
+      this.camera.position.set(0, this.worldSize.height / 2, this.worldSize.depth * 1.5);
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
       return this.initialized = true;
     };

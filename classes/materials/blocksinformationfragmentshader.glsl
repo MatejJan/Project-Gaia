@@ -26,15 +26,7 @@ vec3 getPositionForTextureCoordinates(vec2 textureCoordinates) {
 
 void main() {
   vec3 blockPosition = getPositionForTextureCoordinates(vUv);
-
-  vec3 neighborPosition = blockPosition;
-  neighborPosition.y = mod(neighborPosition.y + 1.0, worldSize.y);
-
-  if (isValidPosition(neighborPosition)) {
-    vec2 neighborBlockCoordinates = getTextureCoordinatesForPosition(neighborPosition);
-    vec4 color = texture2D(blocksInformation, neighborBlockCoordinates);
-    gl_FragColor = color;
-  } else {
-    gl_FragColor = vec4(0.0);
-  }
+  vec2 blockCoordinates = getTextureCoordinatesForPosition(blockPosition);
+  vec4 color = texture2D(blocksInformation, blockCoordinates);
+  gl_FragColor = color;
 }

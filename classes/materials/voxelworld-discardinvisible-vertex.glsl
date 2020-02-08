@@ -8,12 +8,11 @@ if (blockMaterial == 0) {
   return;
 }
 
-// See if the neighbor towards the vertex is facing is empty.
+// See if the neighbor towards the vertex is facing is also full.
 vec3 neighborPosition = blockPosition + normal;
-if (isValidPosition(neighborPosition)) {
-  int neighborBlockMaterial = int(texture2D(blocksInformation, getTextureCoordinatesForPosition(neighborPosition)).a * 255.0);
-  if (neighborBlockMaterial > 0) {
-    gl_Position = vec4(0);
-    return;
-  }
+int neighborBlockMaterial = getBlockMaterialForPosition(neighborPosition);
+if (neighborBlockMaterial > 0) {
+  // No need to draw this face since it's inside the model.
+  gl_Position = vec4(0);
+  return;
 }

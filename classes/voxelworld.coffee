@@ -33,8 +33,7 @@ class ProjectGaia.VoxelWorld
     ]
   ]
 
-  colorFromRGB = (r, g, b) =>
-    new THREE.Color(r / 255, g / 255, b / 255)
+  colorFromRGB = (r, g, b) => new THREE.Color().setIntegerRGB r, g, b
 
   @BlockMaterialProperties: []
 
@@ -58,10 +57,28 @@ class ProjectGaia.VoxelWorld
   @getMaterialIndexForColor: (colorOrR, g, b) ->
     if colorOrR instanceof THREE.Color
       color = colorOrR
+
     else
+      r = colorOrR
       color = colorFromRGB r, g, b
 
-    _.findIndex @BlockMaterialProperties, (blockMaterialProperties) => blockMaterialProperties.color.equals color
+    materialIndex = _.findIndex @BlockMaterialProperties, (blockMaterialProperties) => blockMaterialProperties?.color.equals color
+
+    if materialIndex >= 0 then materialIndex else null
+
+  @getPropertiesForMaterial: (blockMaterial) ->
+    for blockMaterialMapping, blockType in @BlockMaterialMappings
+      for temperature in [0..4]
+        for humidity in [0..4]
+          if blockMaterialMapping.getBlockMaterialForProperties(temperature, humidity) is blockMaterial
+            return {temperature, humidity}
+
+    null
+
+  @load: (loadingManager) ->
+    @environmentModel = new ProjectGaia.VoxelModel
+      url: 'content/64x64test.vox'
+      loadingManager: loadingManager
 
   constructor: (@options) ->
     dataWidth = 512
@@ -75,17 +92,13 @@ class ProjectGaia.VoxelWorld
         for x in [0...@options.width]
           index = @getBlockIndexForCoordinates(x, y, z) * 4
 
-          blockType = Math.floor(Math.random() * 3)
-          blockMaterial = Math.max(0, Math.floor(Math.random() * 1014 - 1000))
-          blockProperties =
-            temperature: Math.floor(Math.random() * 5)
-            humidity: Math.floor(Math.random() * 5)
+          block = @constructor.environmentModel.blocks[x][y][z]
+          materialProperties = @constructor.getPropertiesForMaterial block.material
 
-          blocksInformationArray[index] = blockType
-          blocksInformationArray[index + 1] = blockProperties.temperature
-          blocksInformationArray[index + 2] = blockProperties.humidity
-          blocksInformationArray[index + 3] = blockMaterial
-          blocksInformationArray[index] = blockMaterial * 10
+          blocksInformationArray[index] = block.type
+          blocksInformationArray[index + 1] = materialProperties?.temperature or 0
+          blocksInformationArray[index + 2] = materialProperties?.humidity or 0
+          blocksInformationArray[index + 3] = block.material
 
     @startingBlocksInformationTexture = new THREE.DataTexture blocksInformationArray, dataWidth, dataHeight, THREE.RGBAFormat
 

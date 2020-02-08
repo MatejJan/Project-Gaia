@@ -29,7 +29,7 @@ class ProjectGaia
     directionalLight.shadow.mapSize.width = 4096
     directionalLight.shadow.mapSize.height = 4096
     directionalLight.shadow.bias = -0.001
-    directionalLight.position.set 10, 50, 20
+    directionalLight.position.set 30, 50, 40
     @scene.add directionalLight
 
     # Create loading manager
@@ -46,21 +46,21 @@ class ProjectGaia
     # Load assets.
     ProjectGaia.Materials.VoxelWorld.load @loadingManager
     ProjectGaia.Materials.BlocksInformation.load @loadingManager
+    ProjectGaia.VoxelWorld.load @loadingManager
 
   initialize: ->
-    sideLength = 32
-    
+    model = ProjectGaia.VoxelWorld.environmentModel
+
     @worldSize =
-      width: sideLength
-      height: sideLength
-      depth: sideLength
+      width: model.width
+      height: model.height
+      depth: model.depth
 
     groundGeometry = new THREE.PlaneBufferGeometry(@worldSize.width + 100, @worldSize.depth + 100)
     groundMaterial = new THREE.MeshLambertMaterial color: 0x808080
 
     ground = new THREE.Mesh groundGeometry, groundMaterial
     ground.receiveShadow = true
-    ground.position.y = -@worldSize.height / 2
     ground.rotation.x = -Math.PI / 2
     @scene.add ground
 
@@ -100,12 +100,12 @@ class ProjectGaia
     @voxelMesh.castShadow = true
     @voxelMesh.receiveShadow = true
     @voxelMesh.customDepthMaterial = @voxelWorldDepthMaterial
-    @voxelMesh.position.set -@worldSize.width / 2, -@worldSize.height / 2, -@worldSize.depth / 2
+    @voxelMesh.position.set -@worldSize.width / 2, 0, -@worldSize.depth / 2
     @scene.add @voxelMesh
 
     # Create the camera.
-    @camera = new THREE.PerspectiveCamera 60, window.innerWidth / window.innerHeight, 1, 400
-    @camera.position.z = @worldSize.depth * 2
+    @camera = new THREE.PerspectiveCamera 45, window.innerWidth / window.innerHeight, 1, 400
+    @camera.position.set 0, @worldSize.height / 2, @worldSize.depth * 1.5
 
     @controls = new THREE.OrbitControls @camera, @renderer.domElement
 

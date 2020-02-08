@@ -1,8 +1,10 @@
+
 varying vec3 vMaterialDiffuse;
 varying vec3 vMaterialEmmisive;
 
 varying vec3 vLightFront;
 varying vec3 vIndirectFront;
+varying vec3 vIndirectFactor;
 
 #include <common>
 #include <packing>
@@ -19,8 +21,9 @@ void main() {
 
   reflectedLight.indirectDiffuse = getAmbientLightIrradiance(ambientLightColor);
   reflectedLight.indirectDiffuse += vIndirectFront;
-
   reflectedLight.indirectDiffuse *= BRDF_Diffuse_Lambert(diffuseColor.rgb);
+  reflectedLight.indirectDiffuse *= vIndirectFactor;
+
   reflectedLight.directDiffuse = vLightFront;
   reflectedLight.directDiffuse *= BRDF_Diffuse_Lambert(diffuseColor.rgb) * getShadowMask();
 

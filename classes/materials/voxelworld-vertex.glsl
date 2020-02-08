@@ -6,8 +6,10 @@ uniform vec2 materialDataSize;
 
 varying vec3 vMaterialDiffuse;
 varying vec3 vMaterialEmmisive;
+
 varying vec3 vLightFront;
 varying vec3 vIndirectFront;
+varying vec3 vIndirectFactor;
 
 #include <common>
 #include <lights_pars_begin>
@@ -31,4 +33,18 @@ void main() {
   vec2 blockMaterialColorCoordinates = vec2((float(blockMaterial) + 0.5) / materialDataSize.x, (float(paletteRow) + 0.5) / materialDataSize.y);
   vMaterialDiffuse = texture2D(materialData, blockMaterialColorCoordinates).rgb;
   vMaterialEmmisive = vec3(0.0);
+
+  // Calculate ambient occlusion.
+  float shadowBlockCount = 0.0;
+  vec3 shadowSamplePosition = position;
+
+  if (getBlockMaterialForPosition(shadowSamplePosition) > 0) {shadowBlockCount++;}
+  shadowSamplePosition.x--;
+  if (getBlockMaterialForPosition(shadowSamplePosition) > 0) {shadowBlockCount++;}
+  shadowSamplePosition.z++;
+  if (getBlockMaterialForPosition(shadowSamplePosition) > 0) {shadowBlockCount++;}
+  shadowSamplePosition.x++;
+  if (getBlockMaterialForPosition(shadowSamplePosition) > 0) {shadowBlockCount++;}
+
+  vIndirectFactor = vec3(1.0 - shadowBlockCount / 4.0);
 }

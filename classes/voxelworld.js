@@ -11,7 +11,7 @@
     VoxelWorld.BlockMaterialMappings = [new ProjectGaia.BlockMaterialMapping([[Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty]]), new ProjectGaia.BlockMaterialMapping([[Materials.Rock, Materials.Rock, Materials.Gravel, Materials.Gravel, Materials.Sand], [Materials.Rock, Materials.Soil, Materials.Soil, Materials.Gravel, Materials.Sand], [Materials.Snow, Materials.Soil, Materials.Soil, Materials.Soil, Materials.Sand], [Materials.FrozenRock, Materials.Soil, Materials.Soil, Materials.Mud, Materials.Mud], [Materials.FrozenRock, Materials.Snow, Materials.Mud, Materials.Mud, Materials.Mud]]), new ProjectGaia.BlockMaterialMapping([[Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Ice, Materials.Water, Materials.Water, Materials.Water, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Water, Materials.Water, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Swamp, Materials.Swamp, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Swamp, Materials.Swamp, Materials.Steam]])];
 
     colorFromRGB = function(r, g, b) {
-      return new THREE.Color(r / 255, g / 255, b / 255);
+      return new THREE.Color().setIntegerRGB(r, g, b);
     };
 
     VoxelWorld.BlockMaterialProperties = [];
@@ -87,21 +87,53 @@
     };
 
     VoxelWorld.getMaterialIndexForColor = function(colorOrR, g, b) {
-      var color;
+      var color, materialIndex, r;
       if (colorOrR instanceof THREE.Color) {
         color = colorOrR;
       } else {
+        r = colorOrR;
         color = colorFromRGB(r, g, b);
       }
-      return _.findIndex(this.BlockMaterialProperties, (function(_this) {
+      materialIndex = _.findIndex(this.BlockMaterialProperties, (function(_this) {
         return function(blockMaterialProperties) {
-          return blockMaterialProperties.color.equals(color);
+          return blockMaterialProperties != null ? blockMaterialProperties.color.equals(color) : void 0;
         };
       })(this));
+      if (materialIndex >= 0) {
+        return materialIndex;
+      } else {
+        return null;
+      }
+    };
+
+    VoxelWorld.getPropertiesForMaterial = function(blockMaterial) {
+      var blockMaterialMapping, blockType, humidity, i, j, k, len, ref, temperature;
+      ref = this.BlockMaterialMappings;
+      for (blockType = i = 0, len = ref.length; i < len; blockType = ++i) {
+        blockMaterialMapping = ref[blockType];
+        for (temperature = j = 0; j <= 4; temperature = ++j) {
+          for (humidity = k = 0; k <= 4; humidity = ++k) {
+            if (blockMaterialMapping.getBlockMaterialForProperties(temperature, humidity) === blockMaterial) {
+              return {
+                temperature: temperature,
+                humidity: humidity
+              };
+            }
+          }
+        }
+      }
+      return null;
+    };
+
+    VoxelWorld.load = function(loadingManager) {
+      return this.environmentModel = new ProjectGaia.VoxelModel({
+        url: 'content/64x64test.vox',
+        loadingManager: loadingManager
+      });
     };
 
     function VoxelWorld(options) {
-      var blockMaterial, blockProperties, blockType, blocksInformationArray, dataHeight, dataWidth, i, index, j, k, ref, ref1, ref2, x, y, z;
+      var block, blocksInformationArray, dataHeight, dataWidth, i, index, j, k, materialProperties, ref, ref1, ref2, x, y, z;
       this.options = options;
       dataWidth = 512;
       dataHeight = 512;
@@ -111,17 +143,12 @@
         for (y = j = 0, ref1 = this.options.height; 0 <= ref1 ? j < ref1 : j > ref1; y = 0 <= ref1 ? ++j : --j) {
           for (x = k = 0, ref2 = this.options.width; 0 <= ref2 ? k < ref2 : k > ref2; x = 0 <= ref2 ? ++k : --k) {
             index = this.getBlockIndexForCoordinates(x, y, z) * 4;
-            blockType = Math.floor(Math.random() * 3);
-            blockMaterial = Math.max(0, Math.floor(Math.random() * 1014 - 1000));
-            blockProperties = {
-              temperature: Math.floor(Math.random() * 5),
-              humidity: Math.floor(Math.random() * 5)
-            };
-            blocksInformationArray[index] = blockType;
-            blocksInformationArray[index + 1] = blockProperties.temperature;
-            blocksInformationArray[index + 2] = blockProperties.humidity;
-            blocksInformationArray[index + 3] = blockMaterial;
-            blocksInformationArray[index] = blockMaterial * 10;
+            block = this.constructor.environmentModel.blocks[x][y][z];
+            materialProperties = this.constructor.getPropertiesForMaterial(block.material);
+            blocksInformationArray[index] = block.type;
+            blocksInformationArray[index + 1] = (materialProperties != null ? materialProperties.temperature : void 0) || 0;
+            blocksInformationArray[index + 2] = (materialProperties != null ? materialProperties.humidity : void 0) || 0;
+            blocksInformationArray[index + 3] = block.material;
           }
         }
       }
