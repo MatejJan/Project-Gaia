@@ -27,6 +27,8 @@ class ProjectGaia.Materials.BlocksInformation extends THREE.RawShaderMaterial
           value: _.keys(ProjectGaia.BlockTypes).length
       ,
         ProjectGaia.Materials.getTimeUniforms()
+      ,
+        ProjectGaia.Materials.getRandomUniforms()
 
       vertexShader: ProjectGaia.ComputedTexture.vertexShader
       fragmentShader: @constructor.fragmentShader
@@ -37,6 +39,7 @@ class ProjectGaia.Materials.BlocksInformation extends THREE.RawShaderMaterial
   update: (gameTime) ->
     # Update time.
     ProjectGaia.Materials.updateTimeUniforms @uniforms, gameTime
+    ProjectGaia.Materials.updateRandomUniforms @uniforms
 
     # Set flipped information textures.
     @uniforms.blocksInformation.value = @options.blocksInformationTexture.texture

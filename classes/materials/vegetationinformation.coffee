@@ -27,6 +27,8 @@ class ProjectGaia.Materials.VegetationInformation extends THREE.RawShaderMateria
           value: _.keys(ProjectGaia.BlockTypes).length
       ,
         ProjectGaia.Materials.getTimeUniforms()
+      ,
+        ProjectGaia.Materials.getRandomUniforms()
 
       defines: ProjectGaia.Materials.getTypeDefines()
 
@@ -39,6 +41,7 @@ class ProjectGaia.Materials.VegetationInformation extends THREE.RawShaderMateria
   update: (gameTime) ->
     # Update time.
     ProjectGaia.Materials.updateTimeUniforms @uniforms, gameTime
+    ProjectGaia.Materials.updateRandomUniforms @uniforms
 
     # Set flipped information textures.
     @uniforms.blocksInformation.value = @options.blocksInformationTexture.texture

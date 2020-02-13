@@ -1,5 +1,6 @@
 uniform float totalGameTime;
 uniform float elapsedGameTime;
+uniform float randomSeed;
 
 uniform sampler2D vegetationInformation;
 uniform vec2 vegetationInformationSize;
@@ -30,7 +31,7 @@ ivec3 getPositionForTextureCoordinates(vec2 textureCoordinates) {
 }
 
 float randomLowPrecision(float counter) {
-  return fract(cos(dot(vec2(vUv.x + totalGameTime, vUv.y + counter), K1)) * 12345.6789);
+  return fract(cos(dot(vec2(vUv.x + randomSeed, vUv.y + counter), K1)) * 12345.6789);
 }
 
 float random(int counter) {

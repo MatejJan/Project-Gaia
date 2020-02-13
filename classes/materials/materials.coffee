@@ -7,9 +7,16 @@ class ProjectGaia.Materials
     totalGameTime:
       value: 0
 
+  @getRandomUniforms: ->
+    randomSeed:
+      value: Math.random()
+
   @updateTimeUniforms: (uniforms, gameTime) ->
     uniforms.elapsedGameTime.value = gameTime.elapsedGameTime
     uniforms.totalGameTime.value = gameTime.totalGameTime
+
+  @updateRandomUniforms: (uniforms) ->
+    uniforms.randomSeed.value = Math.random()
 
   @getTypeDefines: ->
     defines = {}

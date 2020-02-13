@@ -13,7 +13,19 @@
     TreeRainforest1: null,
     TreeSoil1: null,
     TreeSoil2: null,
-    TreeSoilSmall: null
+    TreeSoilSmall: null,
+    ShrubAgave: null,
+    ShrubAgave2: null,
+    ShrubBlueberry: null,
+    ShrubBush1: null,
+    ShrubBush2: null,
+    ShrubBushLong: null,
+    ShrubCushionPlants1: null,
+    ShrubCushionPlants2: null,
+    ShrubCushionPlants3: null,
+    ShrubDwarfColumnar: null,
+    ShrubElderberry: null,
+    ShrubSambucus: null
   };
 
   vegetationTypeIndex = 1;

@@ -44,7 +44,7 @@
           blockTypesCount: {
             value: _.keys(ProjectGaia.BlockTypes).length
           }
-        }, ProjectGaia.Materials.getTimeUniforms()),
+        }, ProjectGaia.Materials.getTimeUniforms(), ProjectGaia.Materials.getRandomUniforms()),
         defines: ProjectGaia.Materials.getTypeDefines(),
         vertexShader: ProjectGaia.ComputedTexture.vertexShader,
         fragmentShader: this.constructor.fragmentShader
@@ -55,6 +55,7 @@
 
     VegetationInformation.prototype.update = function(gameTime) {
       ProjectGaia.Materials.updateTimeUniforms(this.uniforms, gameTime);
+      ProjectGaia.Materials.updateRandomUniforms(this.uniforms);
       this.uniforms.blocksInformation.value = this.options.blocksInformationTexture.texture;
       this.uniforms.vegetationInformation.value = this.options.vegetationInformationTexture.texture;
       return this.needsUpdate = true;

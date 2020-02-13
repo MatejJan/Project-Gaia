@@ -164,9 +164,20 @@ void main() {
                   vegetationTypes[7] = vegetationTreeSoil2;
                   vegetationTypes[8] = vegetationTreeSoilSmall;
 
-                } else if (neighborBlockMaterial == materialsSand) {
-                  // Sand grows cactuses and palm trees.
-                  continue;
+                } else if (neighborBlockMaterial == materialsMud) {
+                  vegetationTypes[0] = vegetationShrubAgave;
+                  vegetationTypes[1] = vegetationShrubAgave2;
+                  vegetationTypes[2] = vegetationShrubBlueberry;
+                  vegetationTypes[3] = vegetationShrubBush1;
+                  vegetationTypes[4] = vegetationShrubBush2;
+                  vegetationTypes[5] = vegetationShrubBushLong;
+                  vegetationTypes[6] = vegetationShrubCushionPlants1;
+                  vegetationTypes[7] = vegetationShrubCushionPlants2;
+                  vegetationTypes[8] = vegetationShrubCushionPlants3;
+                  vegetationTypes[9] = vegetationShrubDwarfColumnar;
+                  vegetationTypes[10] = vegetationShrubElderberry;
+                  vegetationTypes[11] = vegetationShrubSambucus;
+
                 } else {
                   continue;
                 }

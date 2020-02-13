@@ -15,9 +15,21 @@
       };
     };
 
+    Materials.getRandomUniforms = function() {
+      return {
+        randomSeed: {
+          value: Math.random()
+        }
+      };
+    };
+
     Materials.updateTimeUniforms = function(uniforms, gameTime) {
       uniforms.elapsedGameTime.value = gameTime.elapsedGameTime;
       return uniforms.totalGameTime.value = gameTime.totalGameTime;
+    };
+
+    Materials.updateRandomUniforms = function(uniforms) {
+      return uniforms.randomSeed.value = Math.random();
     };
 
     Materials.getTypeDefines = function() {
