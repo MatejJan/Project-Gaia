@@ -8,7 +8,7 @@
     extend(VoxelMesh, superClass);
 
     function VoxelMesh(options) {
-      var blockIndex, blockOffset, blockPositionAttribute, blockPositionsArray, blocksCount, depth, geometry, height, i, index, indicesArray, indicesArrayLength, indicesAttribute, indicesPerBlock, indicesPerSide, j, k, l, m, n, normal, normalAttribute, normalsArray, o, p, positionAttribute, positionsArray, q, r, ref, ref1, ref2, ref3, ref4, ref5, s, side, t, vertexArraysLength, verticesOffset, verticesPerBlock, verticesPerSide, width, x, y, z;
+      var blockCoordinatesArray, blockCoordinatesAttribute, blockIndex, blockOffset, blocksCount, depth, geometry, height, i, index, indicesArray, indicesArrayLength, indicesAttribute, indicesPerBlock, indicesPerSide, j, k, l, m, n, normal, normalAttribute, normalsArray, o, p, positionAttribute, positionsArray, q, r, ref, ref1, ref2, ref3, ref4, ref5, s, side, t, vertexArraysLength, verticesOffset, verticesPerBlock, verticesPerSide, width, x, y, z;
       this.options = options;
       width = this.options.width;
       height = this.options.height;
@@ -21,7 +21,7 @@
       vertexArraysLength = blocksCount * verticesPerBlock * 3;
       positionsArray = new Float32Array(vertexArraysLength);
       normalsArray = new Float32Array(vertexArraysLength);
-      blockPositionsArray = new Uint8Array(vertexArraysLength);
+      blockCoordinatesArray = new Uint8Array(vertexArraysLength);
       for (z = k = 0, ref = depth; 0 <= ref ? k < ref : k > ref; z = 0 <= ref ? ++k : --k) {
         for (y = l = 0, ref1 = height; 0 <= ref1 ? l < ref1 : l > ref1; y = 0 <= ref1 ? ++l : --l) {
           for (x = m = 0, ref2 = width; 0 <= ref2 ? m < ref2 : m > ref2; x = 0 <= ref2 ? ++m : --m) {
@@ -35,9 +35,9 @@
                   normalsArray[index] = normal.x;
                   normalsArray[index + 1] = normal.y;
                   normalsArray[index + 2] = normal.z;
-                  blockPositionsArray[index] = x;
-                  blockPositionsArray[index + 1] = y;
-                  blockPositionsArray[index + 2] = z;
+                  blockCoordinatesArray[index] = x;
+                  blockCoordinatesArray[index + 1] = y;
+                  blockCoordinatesArray[index + 2] = z;
                 }
               }
             }
@@ -67,10 +67,10 @@
       geometry = new THREE.BufferGeometry();
       positionAttribute = new THREE.BufferAttribute(positionsArray, 3);
       normalAttribute = new THREE.BufferAttribute(normalsArray, 3);
-      blockPositionAttribute = new THREE.BufferAttribute(blockPositionsArray, 3);
+      blockCoordinatesAttribute = new THREE.BufferAttribute(blockCoordinatesArray, 3);
       geometry.setAttribute("position", positionAttribute);
       geometry.setAttribute("normal", normalAttribute);
-      geometry.setAttribute("blockPosition", blockPositionAttribute);
+      geometry.setAttribute("blockCoordinates", blockCoordinatesAttribute);
       indicesAttribute = new THREE.BufferAttribute(indicesArray, 1);
       geometry.setIndex(indicesAttribute);
       VoxelMesh.__super__.constructor.call(this, geometry, this.options.material);

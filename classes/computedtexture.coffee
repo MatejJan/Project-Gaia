@@ -16,19 +16,16 @@ void main() {
   constructor: (@options) ->
     @renderTargets = []
 
-    image = @options.initializationTexture.image
+    image = @options.initializationTexture?.image
 
     for i in [0..1]
-      renderTarget = new THREE.WebGLRenderTarget image.width, image.height,
+      renderTarget = new THREE.WebGLRenderTarget image?.width or @options.width, image?.height or @options.height,
         minFilter: THREE.NearestFilter
         magFilter: THREE.NearestFilter
 
       @renderTargets.push renderTarget
 
-    initializationMaterial = new @constructor.InitializationMaterial
-      map: @options.initializationTexture
-
-    @quad = new THREE.Mesh new THREE.PlaneBufferGeometry(2, 2), initializationMaterial
+    @quad = new THREE.Mesh new THREE.PlaneBufferGeometry(2, 2)
     @quad.position.set 0.5, 0.5, -1
 
     @scene = new THREE.Scene()
@@ -36,9 +33,15 @@ void main() {
 
     @camera = new THREE.OrthographicCamera 0, 1, 0, 1, 0.5, 1.5
 
-    # Initialize the render target.
-    @options.renderer.setRenderTarget @renderTargets[1]
-    @options.renderer.render @scene, @camera
+    if @options.initializationTexture
+      # Initialize the render target.
+      initializationMaterial = new @constructor.InitializationMaterial
+        map: @options.initializationTexture
+
+      @quad.material = initializationMaterial
+
+      @options.renderer.setRenderTarget @renderTargets[1]
+      @options.renderer.render @scene, @camera
 
     # Set the update material.
     @quad.material = @options.material

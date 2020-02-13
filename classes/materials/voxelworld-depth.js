@@ -22,7 +22,7 @@
             value: options.worldSizeVector
           }
         }),
-        vertexShader: "#include <voxelworld_pars_vertex>\nvoid main() {\n  #include <voxelworld_discardinvisible_vertex>\n  #include <begin_vertex>\n  #include <project_vertex>\n  #include <worldpos_vertex>\n}",
+        vertexShader: "#include <voxelworld_pars_vertex>\nvoid main() {\n  bool discardInvisible = true;\n  #include <voxelworld_discardinvisible_vertex>\n  #include <begin_vertex>\n  #include <project_vertex>\n  #include <worldpos_vertex>\n}",
         fragmentShader: "#include <packing>\nvoid main() {gl_FragColor = packDepthToRGBA(gl_FragCoord.z);}"
       };
       Depth.__super__.constructor.call(this, parameters);

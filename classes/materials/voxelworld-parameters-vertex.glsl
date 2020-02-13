@@ -1,3 +1,3 @@
-attribute vec3 blockPosition;
+attribute vec3 blockCoordinates;
 
 #include <voxelworld_common>

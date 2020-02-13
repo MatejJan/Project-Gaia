@@ -10,8 +10,8 @@ class ProjectGaia.VoxelWorld
       [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty]
       [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty]
       [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty]
-      [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty]
-      [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty]
+      [Materials.Cloud, Materials.Cloud, Materials.Cloud, Materials.Cloud, Materials.Cloud]
+      [Materials.Rain, Materials.Rain, Materials.Rain, Materials.Rain, Materials.Rain]
     ]
   ,
     # Earth
@@ -37,6 +37,9 @@ class ProjectGaia.VoxelWorld
 
   @BlockMaterialProperties: []
 
+  @BlockMaterialProperties[Materials.Cloud] = blockType: Types.Water, color: colorFromRGB(188, 212, 223)
+  @BlockMaterialProperties[Materials.Rain] = blockType: Types.Water, color: colorFromRGB(59, 128, 149)
+
   @BlockMaterialProperties[Materials.Rock] = blockType: Types.Earth, color: colorFromRGB(78, 78, 86)
   @BlockMaterialProperties[Materials.FrozenRock] = blockType: Types.Earth, color: colorFromRGB(130, 173, 179)
   @BlockMaterialProperties[Materials.Soil] = blockType: Types.Earth, color: colorFromRGB(157, 107, 80)
@@ -50,9 +53,14 @@ class ProjectGaia.VoxelWorld
   @BlockMaterialProperties[Materials.Swamp] = blockType: Types.Water, color: colorFromRGB(75, 89, 61)
   @BlockMaterialProperties[Materials.Steam] = blockType: Types.Water, color: colorFromRGB(228, 216, 202)
 
-  @BlockMaterialProperties[Materials.Unknown1] = blockType: Types.Earth, color: colorFromRGB(160, 128, 66)
-  @BlockMaterialProperties[Materials.Unknown2] = blockType: Types.Earth, color: colorFromRGB(103, 108, 26)
-  @BlockMaterialProperties[Materials.Unknown3] = blockType: Types.Earth, color: colorFromRGB(89, 65, 38)
+  @BlockMaterialProperties[Materials.Unknown1] = blockType: Types.Vegetation, color: colorFromRGB(160, 128, 66)
+  @BlockMaterialProperties[Materials.Unknown2] = blockType: Types.Vegetation, color: colorFromRGB(103, 108, 26)
+  @BlockMaterialProperties[Materials.Unknown3] = blockType: Types.Vegetation, color: colorFromRGB(89, 65, 38)
+  @BlockMaterialProperties[Materials.Unknown4] = blockType: Types.Vegetation, color: colorFromRGB(163, 187, 71)
+  @BlockMaterialProperties[Materials.Unknown5] = blockType: Types.Vegetation, color: colorFromRGB(101, 116, 35)
+  @BlockMaterialProperties[Materials.Unknown6] = blockType: Types.Vegetation, color: colorFromRGB(130, 77, 69)
+  @BlockMaterialProperties[Materials.Unknown7] = blockType: Types.Vegetation, color: colorFromRGB(207, 204, 190)
+  @BlockMaterialProperties[Materials.Unknown8] = blockType: Types.Vegetation, color: colorFromRGB(37, 28, 22)
 
   @getMaterialIndexForColor: (colorOrR, g, b) ->
     if colorOrR instanceof THREE.Color
@@ -75,10 +83,25 @@ class ProjectGaia.VoxelWorld
 
     null
 
+  Vegetation = ProjectGaia.VegetationTypes
+
+  @VegetationProperties: []
+  @VegetationProperties[Vegetation.Cactus] = modelName: 'cactus'
+  @VegetationProperties[Vegetation.PineTree] = modelName: 'tree-pine-small'
+  @VegetationProperties[Vegetation.PalmTree] = modelName: 'tree-palm-desert'
+  @VegetationProperties[Vegetation.BirchTree] = modelName: 'tree-birch-soil-tundra'
+
   @load: (loadingManager) ->
     @environmentModel = new ProjectGaia.VoxelModel
-      url: 'content/32x32materials.vox'
+      url: 'content/environments/32x32materials.vox'
       loadingManager: loadingManager
+
+    @vegetationModels = []
+
+    for vegetationProperties, vegetationTypeIndex in @VegetationProperties when vegetationTypeIndex
+      @vegetationModels[vegetationTypeIndex] = new ProjectGaia.VoxelModel
+        url: "content/vegetation/#{vegetationProperties.modelName}.vox"
+        loadingManager: loadingManager
 
   constructor: (@options) ->
     dataWidth = 512

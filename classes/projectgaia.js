@@ -45,6 +45,7 @@
       })(this));
       ProjectGaia.Materials.VoxelWorld.load(this.loadingManager);
       ProjectGaia.Materials.BlocksInformation.load(this.loadingManager);
+      ProjectGaia.Materials.VegetationInformation.load(this.loadingManager);
       ProjectGaia.VoxelWorld.load(this.loadingManager);
     }
 
@@ -56,6 +57,7 @@
         height: model.height,
         depth: model.depth
       };
+      worldSizeVector = new THREE.Vector3(this.worldSize.width, this.worldSize.height, this.worldSize.depth);
       groundGeometry = new THREE.PlaneBufferGeometry(this.worldSize.width + 100, this.worldSize.depth + 100);
       groundMaterial = new THREE.MeshLambertMaterial({
         color: 0x808080
@@ -64,20 +66,35 @@
       ground.receiveShadow = true;
       ground.rotation.x = -Math.PI / 2;
       this.scene.add(ground);
-      worldSizeVector = new THREE.Vector3(this.worldSize.width, this.worldSize.height, this.worldSize.depth);
       this.voxelWorld = new ProjectGaia.VoxelWorld(this.worldSize);
       this.materialsDataTexture = new ProjectGaia.MaterialsDataTexture;
+      this.vegetationDataTexture = new ProjectGaia.VegetationDataTexture;
       this.blocksInformationTexture = new ProjectGaia.ComputedTexture({
         renderer: this.renderer,
         initializationTexture: this.voxelWorld.startingBlocksInformationTexture,
         mapName: 'blocksInformation'
       });
+      this.vegetationInformationTexture = new ProjectGaia.ComputedTexture({
+        renderer: this.renderer,
+        mapName: 'vegetationInformation',
+        width: this.voxelWorld.startingBlocksInformationTexture.image.width,
+        height: this.voxelWorld.startingBlocksInformationTexture.image.height
+      });
       this.blocksInformationMaterial = new ProjectGaia.Materials.BlocksInformation({
         materialsDataTexture: this.materialsDataTexture,
         blocksInformationTexture: this.blocksInformationTexture,
+        vegetationInformationTexture: this.vegetationInformationTexture,
         worldSizeVector: worldSizeVector
       });
       this.blocksInformationTexture.setMaterial(this.blocksInformationMaterial);
+      this.vegetationInformationMaterial = new ProjectGaia.Materials.VegetationInformation({
+        materialsDataTexture: this.materialsDataTexture,
+        vegetationDataTexture: this.vegetationDataTexture,
+        blocksInformationTexture: this.blocksInformationTexture,
+        vegetationInformationTexture: this.vegetationInformationTexture,
+        worldSizeVector: worldSizeVector
+      });
+      this.vegetationInformationTexture.setMaterial(this.vegetationInformationMaterial);
       this.voxelWorldMaterial = new ProjectGaia.Materials.VoxelWorld({
         materialsDataTexture: this.materialsDataTexture,
         blocksInformationTexture: this.blocksInformationTexture,
@@ -99,6 +116,16 @@
       this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 400);
       this.camera.position.set(0, this.worldSize.height / 2, this.worldSize.depth * 1.5);
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+      this.simulationAccumulatedTime = 0;
+      this.simulationGameTime = {
+        totalGameTime: 0,
+        elapsedGameTime: 0.2
+      };
+      this.vegetationUpdateGameTime = {
+        totalGameTime: 0,
+        elapsedGameTime: 0.2
+      };
+      this.vegetationAccumulatedTime = this.vegetationUpdateGameTime.elapsedGameTime / 2;
       return this.initialized = true;
     };
 
@@ -106,10 +133,22 @@
       if (!this.initialized) {
         return;
       }
-      this.blocksInformationMaterial.update(gameTime);
-      this.blocksInformationTexture.update(gameTime);
-      this.voxelWorldMaterial.update(gameTime);
-      this.voxelWorldDepthMaterial.update(gameTime);
+      this.vegetationAccumulatedTime += gameTime.elapsedGameTime;
+      if (this.vegetationAccumulatedTime > this.vegetationUpdateGameTime.elapsedGameTime) {
+        this.vegetationAccumulatedTime -= this.vegetationUpdateGameTime.elapsedGameTime;
+        this.vegetationUpdateGameTime.totalGameTime += this.vegetationUpdateGameTime.elapsedGameTime;
+        this.vegetationInformationMaterial.update(this.vegetationUpdateGameTime);
+        this.vegetationInformationTexture.update(this.vegetationUpdateGameTime);
+      }
+      this.simulationAccumulatedTime += gameTime.elapsedGameTime;
+      if (this.simulationAccumulatedTime > this.simulationGameTime.elapsedGameTime) {
+        this.simulationAccumulatedTime -= this.simulationGameTime.elapsedGameTime;
+        this.simulationGameTime.totalGameTime += this.simulationGameTime.elapsedGameTime;
+        this.blocksInformationMaterial.update(this.simulationGameTime);
+        this.blocksInformationTexture.update(this.simulationGameTime);
+        this.voxelWorldMaterial.update(this.simulationGameTime);
+        this.voxelWorldDepthMaterial.update(this.simulationGameTime);
+      }
       return this.controls.update(gameTime);
     };
 

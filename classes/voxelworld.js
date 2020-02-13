@@ -2,19 +2,29 @@
 (function() {
   'use strict';
   ProjectGaia.VoxelWorld = (function() {
-    var Materials, Types, colorFromRGB;
+    var Materials, Types, Vegetation, colorFromRGB;
 
     Types = ProjectGaia.BlockTypes;
 
     Materials = ProjectGaia.BlockMaterials;
 
-    VoxelWorld.BlockMaterialMappings = [new ProjectGaia.BlockMaterialMapping([[Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty]]), new ProjectGaia.BlockMaterialMapping([[Materials.Rock, Materials.Rock, Materials.Gravel, Materials.Gravel, Materials.Sand], [Materials.Rock, Materials.Soil, Materials.Soil, Materials.Gravel, Materials.Sand], [Materials.Snow, Materials.Soil, Materials.Soil, Materials.Soil, Materials.Sand], [Materials.FrozenRock, Materials.Soil, Materials.Soil, Materials.Mud, Materials.Mud], [Materials.FrozenRock, Materials.Snow, Materials.Mud, Materials.Mud, Materials.Mud]]), new ProjectGaia.BlockMaterialMapping([[Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Ice, Materials.Water, Materials.Water, Materials.Water, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Water, Materials.Water, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Swamp, Materials.Swamp, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Swamp, Materials.Swamp, Materials.Steam]])];
+    VoxelWorld.BlockMaterialMappings = [new ProjectGaia.BlockMaterialMapping([[Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Cloud, Materials.Cloud, Materials.Cloud, Materials.Cloud, Materials.Cloud], [Materials.Rain, Materials.Rain, Materials.Rain, Materials.Rain, Materials.Rain]]), new ProjectGaia.BlockMaterialMapping([[Materials.Rock, Materials.Rock, Materials.Gravel, Materials.Gravel, Materials.Sand], [Materials.Rock, Materials.Soil, Materials.Soil, Materials.Gravel, Materials.Sand], [Materials.Snow, Materials.Soil, Materials.Soil, Materials.Soil, Materials.Sand], [Materials.FrozenRock, Materials.Soil, Materials.Soil, Materials.Mud, Materials.Mud], [Materials.FrozenRock, Materials.Snow, Materials.Mud, Materials.Mud, Materials.Mud]]), new ProjectGaia.BlockMaterialMapping([[Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty, Materials.Empty], [Materials.Ice, Materials.Water, Materials.Water, Materials.Water, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Water, Materials.Water, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Swamp, Materials.Swamp, Materials.Steam], [Materials.Ice, Materials.Water, Materials.Swamp, Materials.Swamp, Materials.Steam]])];
 
     colorFromRGB = function(r, g, b) {
       return new THREE.Color().setIntegerRGB(r, g, b);
     };
 
     VoxelWorld.BlockMaterialProperties = [];
+
+    VoxelWorld.BlockMaterialProperties[Materials.Cloud] = {
+      blockType: Types.Water,
+      color: colorFromRGB(188, 212, 223)
+    };
+
+    VoxelWorld.BlockMaterialProperties[Materials.Rain] = {
+      blockType: Types.Water,
+      color: colorFromRGB(59, 128, 149)
+    };
 
     VoxelWorld.BlockMaterialProperties[Materials.Rock] = {
       blockType: Types.Earth,
@@ -72,18 +82,43 @@
     };
 
     VoxelWorld.BlockMaterialProperties[Materials.Unknown1] = {
-      blockType: Types.Earth,
+      blockType: Types.Vegetation,
       color: colorFromRGB(160, 128, 66)
     };
 
     VoxelWorld.BlockMaterialProperties[Materials.Unknown2] = {
-      blockType: Types.Earth,
+      blockType: Types.Vegetation,
       color: colorFromRGB(103, 108, 26)
     };
 
     VoxelWorld.BlockMaterialProperties[Materials.Unknown3] = {
-      blockType: Types.Earth,
+      blockType: Types.Vegetation,
       color: colorFromRGB(89, 65, 38)
+    };
+
+    VoxelWorld.BlockMaterialProperties[Materials.Unknown4] = {
+      blockType: Types.Vegetation,
+      color: colorFromRGB(163, 187, 71)
+    };
+
+    VoxelWorld.BlockMaterialProperties[Materials.Unknown5] = {
+      blockType: Types.Vegetation,
+      color: colorFromRGB(101, 116, 35)
+    };
+
+    VoxelWorld.BlockMaterialProperties[Materials.Unknown6] = {
+      blockType: Types.Vegetation,
+      color: colorFromRGB(130, 77, 69)
+    };
+
+    VoxelWorld.BlockMaterialProperties[Materials.Unknown7] = {
+      blockType: Types.Vegetation,
+      color: colorFromRGB(207, 204, 190)
+    };
+
+    VoxelWorld.BlockMaterialProperties[Materials.Unknown8] = {
+      blockType: Types.Vegetation,
+      color: colorFromRGB(37, 28, 22)
     };
 
     VoxelWorld.getMaterialIndexForColor = function(colorOrR, g, b) {
@@ -125,11 +160,45 @@
       return null;
     };
 
+    Vegetation = ProjectGaia.VegetationTypes;
+
+    VoxelWorld.VegetationProperties = [];
+
+    VoxelWorld.VegetationProperties[Vegetation.Cactus] = {
+      modelName: 'cactus'
+    };
+
+    VoxelWorld.VegetationProperties[Vegetation.PineTree] = {
+      modelName: 'tree-pine-small'
+    };
+
+    VoxelWorld.VegetationProperties[Vegetation.PalmTree] = {
+      modelName: 'tree-palm-desert'
+    };
+
+    VoxelWorld.VegetationProperties[Vegetation.BirchTree] = {
+      modelName: 'tree-birch-soil-tundra'
+    };
+
     VoxelWorld.load = function(loadingManager) {
-      return this.environmentModel = new ProjectGaia.VoxelModel({
-        url: 'content/32x32materials.vox',
+      var i, len, ref, results, vegetationProperties, vegetationTypeIndex;
+      this.environmentModel = new ProjectGaia.VoxelModel({
+        url: 'content/environments/32x32materials.vox',
         loadingManager: loadingManager
       });
+      this.vegetationModels = [];
+      ref = this.VegetationProperties;
+      results = [];
+      for (vegetationTypeIndex = i = 0, len = ref.length; i < len; vegetationTypeIndex = ++i) {
+        vegetationProperties = ref[vegetationTypeIndex];
+        if (vegetationTypeIndex) {
+          results.push(this.vegetationModels[vegetationTypeIndex] = new ProjectGaia.VoxelModel({
+            url: "content/vegetation/" + vegetationProperties.modelName + ".vox",
+            loadingManager: loadingManager
+          }));
+        }
+      }
+      return results;
     };
 
     function VoxelWorld(options) {

@@ -14,10 +14,18 @@ class ProjectGaia.Materials.VoxelWorld extends THREE.ShaderMaterial
     new THREE.FileLoader(loadingManager).load 'classes/materials/voxelworld-discardinvisible-vertex.glsl', (shaderChunk) =>
       THREE.ShaderChunk.voxelworld_discardinvisible_vertex = shaderChunk
 
+    new THREE.FileLoader(loadingManager).load 'classes/materials/computedtexture-common.glsl', (shaderChunk) =>
+      THREE.ShaderChunk.computedtexture_common = shaderChunk
+
+    new THREE.TextureLoader(loadingManager).load 'content/tileset.png', (@tilesetTexture) =>
+      @tilesetTexture.minFilter = THREE.NearestFilter
+      @tilesetTexture.magFilter = THREE.NearestFilter
+
   constructor: (options) ->
     parameters =
       lights: true
-      blending: THREE.NoBlending
+      blending: THREE.NormalBlending
+      transparent: true
       side: THREE.FrontSide
       shadowSide: THREE.FrontSide
 
@@ -30,6 +38,10 @@ class ProjectGaia.Materials.VoxelWorld extends THREE.ShaderMaterial
           value: options.materialsDataTexture
         materialDataSize:
           value: new THREE.Vector2 options.materialsDataTexture.image.width, options.materialsDataTexture.image.height
+        tileset:
+          value: @constructor.tilesetTexture
+        tilesetSize:
+          value: new THREE.Vector2 @constructor.tilesetTexture.image.width, @constructor.tilesetTexture.image.height
         worldSize:
           value: options.worldSizeVector
         blockTypesCount:

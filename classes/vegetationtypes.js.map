@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "vegetationtypes.js",
+  "sourceRoot": "",
+  "sources": [
+    "vegetationtypes.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA;EAAA;EAEA,WAAW,CAAC,eAAZ,GACE;IAAA,KAAA,EAAO,CAAP;IACA,MAAA,EAAQ,CADR;IAEA,QAAA,EAAU,CAFV;IAGA,QAAA,EAAU,CAHV;IAIA,SAAA,EAAW,CAJX;;AAHF"
+}

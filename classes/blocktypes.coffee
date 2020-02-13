@@ -4,10 +4,14 @@ ProjectGaia.BlockTypes =
   Air: 0
   Earth: 1
   Water: 2
+  Vegetation: 3
+  Custom: 4
 
 ProjectGaia.BlockMaterials =
   # Air
   Empty: 0
+  Rain: 15
+  Cloud: 16
 
   # Earth
   Rock: 1
@@ -27,6 +31,11 @@ ProjectGaia.BlockMaterials =
   Unknown1: 12
   Unknown2: 13
   Unknown3: 14
+  Unknown4: 17
+  Unknown5: 18
+  Unknown6: 19
+  Unknown7: 20
+  Unknown8: 21
 
 class ProjectGaia.BlockMaterialMapping
   constructor: (@mapping) ->

@@ -20,6 +20,22 @@
       return uniforms.totalGameTime.value = gameTime.totalGameTime;
     };
 
+    Materials.getTypeDefines = function() {
+      var blockMaterial, blockMaterialIndex, defines, ref, ref1, vegetationType, vegetationTypeIndex;
+      defines = {};
+      ref = ProjectGaia.BlockMaterials;
+      for (blockMaterial in ref) {
+        blockMaterialIndex = ref[blockMaterial];
+        defines["materials" + (_.upperFirst(blockMaterial))] = blockMaterialIndex;
+      }
+      ref1 = ProjectGaia.VegetationTypes;
+      for (vegetationType in ref1) {
+        vegetationTypeIndex = ref1[vegetationType];
+        defines["vegetation" + (_.upperFirst(vegetationType))] = vegetationTypeIndex;
+      }
+      return defines;
+    };
+
     return Materials;
 
   })();

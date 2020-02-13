@@ -16,7 +16,9 @@
       ref = ProjectGaia.BlockTypes;
       for (blockType in ref) {
         blockTypeIndex = ref[blockType];
-        materialMapping = ProjectGaia.VoxelWorld.BlockMaterialMappings[blockTypeIndex];
+        if (!(materialMapping = ProjectGaia.VoxelWorld.BlockMaterialMappings[blockTypeIndex])) {
+          continue;
+        }
         y = blockTypeIndex;
         for (temperature = i = 0; i <= 4; temperature = ++i) {
           for (humidity = j = 0; j <= 4; humidity = ++j) {

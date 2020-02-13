@@ -46,9 +46,11 @@ class ProjectGaia
     # Load assets.
     ProjectGaia.Materials.VoxelWorld.load @loadingManager
     ProjectGaia.Materials.BlocksInformation.load @loadingManager
+    ProjectGaia.Materials.VegetationInformation.load @loadingManager
     ProjectGaia.VoxelWorld.load @loadingManager
 
   initialize: ->
+    # Determine world size.
     model = ProjectGaia.VoxelWorld.environmentModel
 
     @worldSize =
@@ -56,6 +58,9 @@ class ProjectGaia
       height: model.height
       depth: model.depth
 
+    worldSizeVector = new THREE.Vector3 @worldSize.width, @worldSize.height, @worldSize.depth
+
+    # Create ground plane.
     groundGeometry = new THREE.PlaneBufferGeometry(@worldSize.width + 100, @worldSize.depth + 100)
     groundMaterial = new THREE.MeshLambertMaterial color: 0x808080
 
@@ -64,24 +69,47 @@ class ProjectGaia
     ground.rotation.x = -Math.PI / 2
     @scene.add ground
 
-    worldSizeVector = new THREE.Vector3 @worldSize.width, @worldSize.height, @worldSize.depth
-
+    # Create main voxel world instance.
     @voxelWorld = new ProjectGaia.VoxelWorld @worldSize
 
+    # Create materials data texture.
     @materialsDataTexture = new ProjectGaia.MaterialsDataTexture
 
+    # Create vegetation models data texture.
+    @vegetationDataTexture = new ProjectGaia.VegetationDataTexture
+
+    # Create information textures.
     @blocksInformationTexture = new ProjectGaia.ComputedTexture
       renderer: @renderer
       initializationTexture: @voxelWorld.startingBlocksInformationTexture
       mapName: 'blocksInformation'
 
+    @vegetationInformationTexture = new ProjectGaia.ComputedTexture
+      renderer: @renderer
+      mapName: 'vegetationInformation'
+      width: @voxelWorld.startingBlocksInformationTexture.image.width
+      height: @voxelWorld.startingBlocksInformationTexture.image.height
+
+    # Create blocks information compute shader.
     @blocksInformationMaterial = new ProjectGaia.Materials.BlocksInformation
       materialsDataTexture: @materialsDataTexture
       blocksInformationTexture: @blocksInformationTexture
+      vegetationInformationTexture: @vegetationInformationTexture
       worldSizeVector: worldSizeVector
 
     @blocksInformationTexture.setMaterial @blocksInformationMaterial
 
+    # Create vegetation information compute shader.
+    @vegetationInformationMaterial = new ProjectGaia.Materials.VegetationInformation
+      materialsDataTexture: @materialsDataTexture
+      vegetationDataTexture: @vegetationDataTexture
+      blocksInformationTexture: @blocksInformationTexture
+      vegetationInformationTexture: @vegetationInformationTexture
+      worldSizeVector: worldSizeVector
+
+    @vegetationInformationTexture.setMaterial @vegetationInformationMaterial
+
+    # Create world rendering objects.
     @voxelWorldMaterial = new ProjectGaia.Materials.VoxelWorld
       materialsDataTexture: @materialsDataTexture
       blocksInformationTexture: @blocksInformationTexture
@@ -107,17 +135,52 @@ class ProjectGaia
     @camera = new THREE.PerspectiveCamera 45, window.innerWidth / window.innerHeight, 1, 400
     @camera.position.set 0, @worldSize.height / 2, @worldSize.depth * 1.5
 
+    # Create controls.
     @controls = new THREE.OrbitControls @camera, @renderer.domElement
 
+    # Prepare time keeping.
+    @simulationAccumulatedTime = 0
+
+    @simulationGameTime =
+      totalGameTime: 0
+      elapsedGameTime: 0.2
+
+    @vegetationUpdateGameTime =
+      totalGameTime: 0
+      elapsedGameTime: 0.2
+
+    # Start vegetation time out of phase with simulation update.
+    @vegetationAccumulatedTime = @vegetationUpdateGameTime.elapsedGameTime / 2
+
+    # We have completed initialization.
     @initialized = true
 
   update: (gameTime) ->
     return unless @initialized
 
-    @blocksInformationMaterial.update gameTime
-    @blocksInformationTexture.update gameTime
-    @voxelWorldMaterial.update gameTime
-    @voxelWorldDepthMaterial.update gameTime
+    # Update vegetation in between simulation updates.
+    @vegetationAccumulatedTime += gameTime.elapsedGameTime
+
+    if @vegetationAccumulatedTime > @vegetationUpdateGameTime.elapsedGameTime
+      @vegetationAccumulatedTime -= @vegetationUpdateGameTime.elapsedGameTime
+      @vegetationUpdateGameTime.totalGameTime += @vegetationUpdateGameTime.elapsedGameTime
+
+      @vegetationInformationMaterial.update @vegetationUpdateGameTime
+      @vegetationInformationTexture.update @vegetationUpdateGameTime
+
+    # Update blocks simulation.
+    @simulationAccumulatedTime += gameTime.elapsedGameTime
+
+    if @simulationAccumulatedTime > @simulationGameTime.elapsedGameTime
+      @simulationAccumulatedTime -= @simulationGameTime.elapsedGameTime
+      @simulationGameTime.totalGameTime += @simulationGameTime.elapsedGameTime
+
+      @blocksInformationMaterial.update @simulationGameTime
+      @blocksInformationTexture.update @simulationGameTime
+      @voxelWorldMaterial.update @simulationGameTime
+      @voxelWorldDepthMaterial.update @simulationGameTime
+
+    # Update controls on every frame.
     @controls.update gameTime
 
   draw: (gameTime) ->

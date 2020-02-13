@@ -16,7 +16,7 @@ class ProjectGaia.VoxelMesh extends THREE.Mesh
     vertexArraysLength = blocksCount * verticesPerBlock * 3
     positionsArray = new Float32Array vertexArraysLength
     normalsArray = new Float32Array vertexArraysLength
-    blockPositionsArray = new Uint8Array vertexArraysLength
+    blockCoordinatesArray = new Uint8Array vertexArraysLength
 
     for z in [0...depth]
       for y in [0...height]
@@ -35,9 +35,9 @@ class ProjectGaia.VoxelMesh extends THREE.Mesh
                 normalsArray[index + 1] = normal.y
                 normalsArray[index + 2] = normal.z
 
-                blockPositionsArray[index] = x
-                blockPositionsArray[index + 1] = y
-                blockPositionsArray[index + 2] = z
+                blockCoordinatesArray[index] = x
+                blockCoordinatesArray[index + 1] = y
+                blockCoordinatesArray[index + 2] = z
 
     indicesArrayLength = blocksCount * indicesPerBlock
     indicesArray = new Uint32Array indicesArrayLength
@@ -63,11 +63,11 @@ class ProjectGaia.VoxelMesh extends THREE.Mesh
 
     positionAttribute = new THREE.BufferAttribute positionsArray, 3
     normalAttribute = new THREE.BufferAttribute normalsArray, 3
-    blockPositionAttribute = new THREE.BufferAttribute blockPositionsArray, 3
+    blockCoordinatesAttribute = new THREE.BufferAttribute blockCoordinatesArray, 3
 
     geometry.setAttribute "position", positionAttribute
     geometry.setAttribute "normal", normalAttribute
-    geometry.setAttribute "blockPosition", blockPositionAttribute
+    geometry.setAttribute "blockCoordinates", blockCoordinatesAttribute
 
     indicesAttribute = new THREE.BufferAttribute indicesArray, 1
     geometry.setIndex indicesAttribute

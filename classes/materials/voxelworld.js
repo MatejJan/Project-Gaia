@@ -28,9 +28,21 @@
           return THREE.ShaderChunk.voxelworld_pars_vertex = shaderChunk;
         };
       })(this));
-      return new THREE.FileLoader(loadingManager).load('classes/materials/voxelworld-discardinvisible-vertex.glsl', (function(_this) {
+      new THREE.FileLoader(loadingManager).load('classes/materials/voxelworld-discardinvisible-vertex.glsl', (function(_this) {
         return function(shaderChunk) {
           return THREE.ShaderChunk.voxelworld_discardinvisible_vertex = shaderChunk;
+        };
+      })(this));
+      new THREE.FileLoader(loadingManager).load('classes/materials/computedtexture-common.glsl', (function(_this) {
+        return function(shaderChunk) {
+          return THREE.ShaderChunk.computedtexture_common = shaderChunk;
+        };
+      })(this));
+      return new THREE.TextureLoader(loadingManager).load('content/tileset.png', (function(_this) {
+        return function(tilesetTexture) {
+          _this.tilesetTexture = tilesetTexture;
+          _this.tilesetTexture.minFilter = THREE.NearestFilter;
+          return _this.tilesetTexture.magFilter = THREE.NearestFilter;
         };
       })(this));
     };
@@ -39,7 +51,8 @@
       var parameters;
       parameters = {
         lights: true,
-        blending: THREE.NoBlending,
+        blending: THREE.NormalBlending,
+        transparent: true,
         side: THREE.FrontSide,
         shadowSide: THREE.FrontSide,
         uniforms: _.extend({
@@ -54,6 +67,12 @@
           },
           materialDataSize: {
             value: new THREE.Vector2(options.materialsDataTexture.image.width, options.materialsDataTexture.image.height)
+          },
+          tileset: {
+            value: this.constructor.tilesetTexture
+          },
+          tilesetSize: {
+            value: new THREE.Vector2(this.constructor.tilesetTexture.image.width, this.constructor.tilesetTexture.image.height)
           },
           worldSize: {
             value: options.worldSizeVector

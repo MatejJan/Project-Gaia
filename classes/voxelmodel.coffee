@@ -4,7 +4,7 @@ class ProjectGaia.VoxelModel
 
     parser = new vox.Parser()
     parser.parse(@options.url).then (data) =>
-      console.log "loaded vox", data, @
+      console.log "loaded vox", @options.url, data, @
 
       @width = data.size.x
       @height = data.size.z

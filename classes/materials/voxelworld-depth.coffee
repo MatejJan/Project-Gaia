@@ -16,6 +16,7 @@ class ProjectGaia.Materials.VoxelWorld.Depth extends THREE.ShaderMaterial
       vertexShader: """
         #include <voxelworld_pars_vertex>
         void main() {
+          bool discardInvisible = true;
           #include <voxelworld_discardinvisible_vertex>
           #include <begin_vertex>
           #include <project_vertex>

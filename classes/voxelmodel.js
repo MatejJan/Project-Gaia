@@ -9,7 +9,7 @@
       parser.parse(this.options.url).then((function(_this) {
         return function(data) {
           var color, i, j, k, l, len, materialIndex, materialProperties, ref, ref1, ref2, ref3, voxel, x, y, z;
-          console.log("loaded vox", data, _this);
+          console.log("loaded vox", _this.options.url, data, _this);
           _this.width = data.size.x;
           _this.height = data.size.z;
           _this.depth = data.size.y;

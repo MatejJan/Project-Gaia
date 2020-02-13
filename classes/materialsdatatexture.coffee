@@ -11,7 +11,7 @@ class ProjectGaia.MaterialsDataTexture extends THREE.DataTexture
 
     # Embed material mappings.
     for blockType, blockTypeIndex of ProjectGaia.BlockTypes
-      materialMapping = ProjectGaia.VoxelWorld.BlockMaterialMappings[blockTypeIndex]
+      continue unless materialMapping = ProjectGaia.VoxelWorld.BlockMaterialMappings[blockTypeIndex]
       y = blockTypeIndex
 
       for temperature in [0..4]
