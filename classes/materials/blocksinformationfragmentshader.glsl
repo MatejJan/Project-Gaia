@@ -78,11 +78,11 @@ void main() {
 
     // Move humidity up with air, except for rain.
     if (humidity < 4) {
-      if (airUp && temperatureFlowToTop > humidity && blockPosition.y < int(worldSize.y - 1.0)) {
+      if (airUp && temperatureFlowToTop > 0 && blockPosition.y < int(worldSize.y - 2.0)) {
         humidity--;
       }
 
-      if (airDown && humidityDown > 0 && temperatureFlowFromBottom > humidityDown) {
+      if (airDown && humidityDown > 0 && temperatureFlowFromBottom > 0) {
         humidity++;
       }
     }
@@ -157,7 +157,7 @@ void main() {
     }
 
     // Spawn random raindrops.
-    if (humidity == 3 && random(1) < 0.0001) {
+    if (humidity == 3 && random(1) < 0.001) {
       humidity = 4;
     }
   } else {

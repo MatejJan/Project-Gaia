@@ -35,7 +35,9 @@ void main() {
   if (blockMaterial == 0) {
     vec3 blockCenter = blockCoordinates + vec3(0.5, 0.5, -0.5);
     vec3 relativePosition = position - blockCenter;
-    transformed = blockCenter + relativePosition * 0.1;
+    float size = 0.1;
+    if (visualizeHumidity) size = blockInformation.b * 255.0 / 10.0;
+    transformed = blockCenter + relativePosition * size;
   }
 
   #include <project_vertex>
@@ -57,7 +59,13 @@ void main() {
   if (visualizeTemperature || visualizeHumidity) {
     vMaterialDiffuse = vec3(0.0);
     if (visualizeTemperature) vMaterialDiffuse.r = blockInformation.g * 255.0 / 4.0;
-    if (visualizeHumidity) vMaterialDiffuse.b = blockInformation.b * 255.0 / 4.0;
+    if (visualizeHumidity) {
+      if (blockMaterial == 0) {
+        vMaterialDiffuse.b = blockInformation.b > 0.0 ? 255.0: 0.0;
+      } else {
+        vMaterialDiffuse.b = blockInformation.b * 255.0 / 4.0;
+      }
+    }
   }
 
   // Make empty blocks transparent.
