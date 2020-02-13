@@ -8,18 +8,23 @@ varying vec2 vUv;
 
 const vec2 K1 = vec2(23.14069263277926,2.665144142690225);
 
+int mod(int a, int b) {
+  int whole = a / b;
+  return a - whole * b;
+}
+
 ivec3 getPositionForTextureCoordinates(vec2 textureCoordinates) {
-  float width = worldSize.x;
-  float height = worldSize.y;
-  float depth = worldSize.z;
-  float dataWidth = blocksInformationSize.x;
-  float dataHeight = blocksInformationSize.y;
-  float index = floor(floor(textureCoordinates.x * dataWidth) + floor(textureCoordinates.y * dataHeight) * dataWidth);
-  vec3 position;
+  int width = int(worldSize.x);
+  int height = int(worldSize.y);
+  int depth = int(worldSize.z);
+  int dataWidth = int(blocksInformationSize.x);
+  int dataHeight = int(blocksInformationSize.y);
+  int index = int(textureCoordinates.x * float(dataWidth)) + int(textureCoordinates.y * float(dataHeight)) * dataWidth;
+  ivec3 position;
   position.x = mod(index, width);
-  index = floor(index / width);
+  index /= width;
   position.y = mod(index, height);
-  index = floor(index / height);
+  index /= height;
   position.z = index;
   return ivec3(position);
 }

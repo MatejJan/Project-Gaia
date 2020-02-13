@@ -67,7 +67,7 @@ class ProjectGaia
     ground = new THREE.Mesh groundGeometry, groundMaterial
     ground.receiveShadow = true
     ground.rotation.x = -Math.PI / 2
-    @scene.add ground
+    # @scene.add ground
 
     # Create main voxel world instance.
     @voxelWorld = new ProjectGaia.VoxelWorld @worldSize
@@ -128,15 +128,23 @@ class ProjectGaia
     @voxelMesh.castShadow = true
     @voxelMesh.receiveShadow = true
     @voxelMesh.customDepthMaterial = @voxelWorldDepthMaterial
-    @voxelMesh.position.set -@worldSize.width / 2, 0, -@worldSize.depth / 2
+    @voxelMesh.position.set -@worldSize.width / 2, -5, -@worldSize.depth / 2
     @scene.add @voxelMesh
 
     # Create the camera.
     @camera = new THREE.PerspectiveCamera 45, window.innerWidth / window.innerHeight, 1, 400
-    @camera.position.set 0, @worldSize.height / 2, @worldSize.depth * 1.5
+    @camera.position.set 0, @worldSize.height, @worldSize.depth * 1.75
 
     # Create controls.
     @controls = new THREE.OrbitControls @camera, @renderer.domElement
+
+    document.addEventListener 'keypress', (event) =>
+      switch event.keyCode
+        when 104
+          @voxelWorldMaterial.uniforms.visualizeHumidity.value = not @voxelWorldMaterial.uniforms.visualizeHumidity.value
+
+        when 116
+          @voxelWorldMaterial.uniforms.visualizeTemperature.value = not @voxelWorldMaterial.uniforms.visualizeTemperature.value
 
     # Prepare time keeping.
     @simulationAccumulatedTime = 0

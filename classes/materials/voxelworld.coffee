@@ -30,6 +30,10 @@ class ProjectGaia.Materials.VoxelWorld extends THREE.ShaderMaterial
       shadowSide: THREE.FrontSide
 
       uniforms: _.extend
+        visualizeTemperature:
+          value: false
+        visualizeHumidity:
+          value: false
         blocksInformation:
           value: null
         blocksInformationSize:

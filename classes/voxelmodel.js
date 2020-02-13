@@ -9,7 +9,6 @@
       parser.parse(this.options.url).then((function(_this) {
         return function(data) {
           var color, i, j, k, l, len, materialIndex, materialProperties, ref, ref1, ref2, ref3, voxel, x, y, z;
-          console.log("loaded vox", _this.options.url, data, _this);
           _this.width = data.size.x;
           _this.height = data.size.z;
           _this.depth = data.size.y;
@@ -40,15 +39,15 @@
           ref3 = data.voxels;
           for (l = 0, len = ref3.length; l < len; l++) {
             voxel = ref3[l];
-            if (materialIndex = ProjectGaia.VoxelWorld.getMaterialIndexForColor(_this.colors[voxel.colorIndex])) {
-              materialProperties = ProjectGaia.VoxelWorld.BlockMaterialProperties[materialIndex];
-              _this.blocks[voxel.x][voxel.z][_this.depth - 1 - voxel.y] = {
-                material: materialIndex,
-                type: materialProperties.blockType
-              };
-            } else {
-              console.warn("No material assigned to color", data.palette[voxel.colorIndex]);
+            materialIndex = ProjectGaia.VoxelWorld.getMaterialIndexForColor(_this.colors[voxel.colorIndex]);
+            if (materialIndex == null) {
+              materialIndex = ProjectGaia.VoxelWorld.registerCustomMaterial(_this.colors[voxel.colorIndex]);
             }
+            materialProperties = ProjectGaia.VoxelWorld.BlockMaterialProperties[materialIndex];
+            _this.blocks[voxel.x][voxel.z][_this.depth - 1 - voxel.y] = {
+              material: materialIndex,
+              type: materialProperties.blockType
+            };
           }
           return _this.options.loadingManager.itemEnd(_this.options.url);
         };

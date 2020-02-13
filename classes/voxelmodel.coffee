@@ -4,8 +4,6 @@ class ProjectGaia.VoxelModel
 
     parser = new vox.Parser()
     parser.parse(@options.url).then (data) =>
-      console.log "loaded vox", @options.url, data, @
-
       @width = data.size.x
       @height = data.size.z
       @depth = data.size.y
@@ -27,14 +25,15 @@ class ProjectGaia.VoxelModel
             @blocks[x][y][z] = type: 0, material: 0
 
       for voxel in data.voxels
-        if materialIndex = ProjectGaia.VoxelWorld.getMaterialIndexForColor @colors[voxel.colorIndex]
-          materialProperties = ProjectGaia.VoxelWorld.BlockMaterialProperties[materialIndex]
+        materialIndex = ProjectGaia.VoxelWorld.getMaterialIndexForColor @colors[voxel.colorIndex]
 
-          @blocks[voxel.x][voxel.z][@depth - 1 - voxel.y] =
-            material: materialIndex
-            type: materialProperties.blockType
+        # Register material if we didn't recognize it.
+        materialIndex ?= ProjectGaia.VoxelWorld.registerCustomMaterial @colors[voxel.colorIndex]
 
-        else
-          console.warn "No material assigned to color", data.palette[voxel.colorIndex]
+        materialProperties = ProjectGaia.VoxelWorld.BlockMaterialProperties[materialIndex]
+
+        @blocks[voxel.x][voxel.z][@depth - 1 - voxel.y] =
+          material: materialIndex
+          type: materialProperties.blockType
 
       @options.loadingManager.itemEnd @options.url

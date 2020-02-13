@@ -33,7 +33,7 @@ ivec3 getModelSize(int vegetationType) {
   return ivec3(width, height, depth);
 }
 
-bool isValidPosition(ivec3 modelVoxelPosition, ivec3 modelSize) {
+bool isValidModelPosition(ivec3 modelVoxelPosition, ivec3 modelSize) {
   return modelVoxelPosition.x >= 0 && modelVoxelPosition.x < modelSize.x &&
          modelVoxelPosition.y >= 0 && modelVoxelPosition.y < modelSize.y &&
          modelVoxelPosition.z >= 0 && modelVoxelPosition.z < modelSize.z;
@@ -59,6 +59,29 @@ vec4 getOutputData(int vegetationType, ivec3 voxelPosition) {
   float vegetationMaterial = float(getMaterialForModel(vegetationType, voxelPosition));
 
   return vec4(vegetationType, packedVoxelPosition.x, packedVoxelPosition.y, vegetationMaterial) / 255.0;
+}
+
+int pickRandomVegetationType(int[16] vegetationTypes) {
+  float vegetationTypesCount = 0.0;
+  for (int i = 0; i < 16; i++) {
+    if (vegetationTypes[i] > 0) {
+      vegetationTypesCount++;
+    } else {
+      break;
+    }
+  }
+
+  int randomIndex = int(random(99) * vegetationTypesCount);
+
+  #pragma unroll_loop
+  for ( int i = 0; i < 16; i ++ ) {
+
+    if (randomIndex == 0) return vegetationTypes[ i ];
+    randomIndex--;
+
+  }
+
+  return 0;
 }
 
 void main() {
@@ -88,7 +111,7 @@ void main() {
           if (dx == 0 && dy == 0 && dz == 0) continue;
 
           ivec3 neighborPosition = blockPosition + ivec3(dx, dy, dz);
-          if (!isValidPosition(neighborPosition, integerWorldSize)) continue;
+          if (!isValidPosition(neighborPosition)) continue;
 
           vec2 neighborBlockCoordinates = getTextureCoordinatesForPosition(neighborPosition);
 
@@ -110,7 +133,7 @@ void main() {
               ivec3 modelVoxelPosition = nieghborModelVoxelPosition - ivec3(dx, dy, dz);
 
               // See if our position is still inside the model.
-              if (isValidPosition(modelVoxelPosition, modelSize)) {
+              if (isValidModelPosition(modelVoxelPosition, modelSize)) {
                 // Extend neighbor vegetation.
                 vegetationType = neighborVegetationType;
                 voxelPosition = modelVoxelPosition;
@@ -127,25 +150,28 @@ void main() {
                 // Analyze the material we're growing on.
                 ivec4 neighborBlockProperties = ivec4(texture2D(blocksInformation, neighborBlockCoordinates) * 255.0);
                 int neighborBlockMaterial = neighborBlockProperties.a;
+                int vegetationTypes[16];
 
                 if (neighborBlockMaterial == materialsSoil) {
                   // Soil grows pine trees.
-                  if (random(3) < 0.5) {
-                    vegetationType = vegetationPineTree;
-                  } else {
-                    vegetationType = vegetationBirchTree;
-                  }
+                  vegetationTypes[0] = vegetationTreeBirchSmall;
+                  vegetationTypes[1] = vegetationTreeBirchSmall2;
+                  vegetationTypes[2] = vegetationTreeOak;
+                  vegetationTypes[3] = vegetationTreeOakLarge;
+                  vegetationTypes[4] = vegetationTreePineTundra;
+                  vegetationTypes[5] = vegetationTreeRainforest1;
+                  vegetationTypes[6] = vegetationTreeSoil1;
+                  vegetationTypes[7] = vegetationTreeSoil2;
+                  vegetationTypes[8] = vegetationTreeSoilSmall;
+
                 } else if (neighborBlockMaterial == materialsSand) {
                   // Sand grows cactuses and palm trees.
-                  if (random(3) < 0.5) {
-                    vegetationType = vegetationCactus;
-                  } else {
-                    vegetationType = vegetationPalmTree;
-                  }
+                  continue;
                 } else {
                   continue;
                 }
 
+                vegetationType = pickRandomVegetationType(vegetationTypes);
                 voxelPosition = getRootVoxelPosition(vegetationType);
                 gl_FragColor = getOutputData(vegetationType, voxelPosition);
                 return;

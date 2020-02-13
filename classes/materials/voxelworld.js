@@ -56,6 +56,12 @@
         side: THREE.FrontSide,
         shadowSide: THREE.FrontSide,
         uniforms: _.extend({
+          visualizeTemperature: {
+            value: false
+          },
+          visualizeHumidity: {
+            value: false
+          },
           blocksInformation: {
             value: null
           },

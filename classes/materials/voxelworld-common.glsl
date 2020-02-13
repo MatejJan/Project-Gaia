@@ -16,9 +16,9 @@ vec2 getTextureCoordinatesForPosition(ivec3 position) {
 }
 
 bool isValidPosition(ivec3 position) {
-  return (position.x >= 0 && position.x < int(worldSize.x) &&
-  position.y >= 0 && position.y < int(worldSize.y) &&
-  position.z >= 0 && position.z < int(worldSize.z));
+  return position.x >= 0 && position.x < int(worldSize.x) &&
+         position.y >= 0 && position.y < int(worldSize.y) &&
+         position.z >= 0 && position.z < int(worldSize.z);
 }
 
 int getBlockMaterialForPosition(ivec3 position) {

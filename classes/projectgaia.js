@@ -65,7 +65,6 @@
       ground = new THREE.Mesh(groundGeometry, groundMaterial);
       ground.receiveShadow = true;
       ground.rotation.x = -Math.PI / 2;
-      this.scene.add(ground);
       this.voxelWorld = new ProjectGaia.VoxelWorld(this.worldSize);
       this.materialsDataTexture = new ProjectGaia.MaterialsDataTexture;
       this.vegetationDataTexture = new ProjectGaia.VegetationDataTexture;
@@ -111,11 +110,21 @@
       this.voxelMesh.castShadow = true;
       this.voxelMesh.receiveShadow = true;
       this.voxelMesh.customDepthMaterial = this.voxelWorldDepthMaterial;
-      this.voxelMesh.position.set(-this.worldSize.width / 2, 0, -this.worldSize.depth / 2);
+      this.voxelMesh.position.set(-this.worldSize.width / 2, -5, -this.worldSize.depth / 2);
       this.scene.add(this.voxelMesh);
       this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 400);
-      this.camera.position.set(0, this.worldSize.height / 2, this.worldSize.depth * 1.5);
+      this.camera.position.set(0, this.worldSize.height, this.worldSize.depth * 1.75);
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+      document.addEventListener('keypress', (function(_this) {
+        return function(event) {
+          switch (event.keyCode) {
+            case 104:
+              return _this.voxelWorldMaterial.uniforms.visualizeHumidity.value = !_this.voxelWorldMaterial.uniforms.visualizeHumidity.value;
+            case 116:
+              return _this.voxelWorldMaterial.uniforms.visualizeTemperature.value = !_this.voxelWorldMaterial.uniforms.visualizeTemperature.value;
+          }
+        };
+      })(this));
       this.simulationAccumulatedTime = 0;
       this.simulationGameTime = {
         totalGameTime: 0,

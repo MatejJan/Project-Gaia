@@ -2,6 +2,8 @@ uniform float totalGameTime;
 uniform int blockTypesCount;
 uniform sampler2D tileset;
 uniform vec2 tilesetSize;
+uniform bool visualizeTemperature;
+uniform bool visualizeHumidity;
 
 varying vec3 vMaterialDiffuse;
 varying vec3 vMaterialEmmisive;
@@ -19,8 +21,6 @@ varying vec2 vUv;
 
 void main() {
   bool textured = false;
-  bool visualizeTemperature = false;
-  bool visualizeHumidity = false;
 
   bool discardInvisible = !(visualizeTemperature || visualizeHumidity);
 

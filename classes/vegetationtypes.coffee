@@ -2,7 +2,20 @@
 
 ProjectGaia.VegetationTypes =
   Empty: 0
-  Cactus: 1
-  PineTree: 2
-  PalmTree: 3
-  BirchTree: 4
+
+  # Trees
+  TreeBirchSmall: null
+  TreeBirchSmall2: null
+  TreeOak: null
+  TreeOakLarge: null
+  TreePineTundra: null
+  TreeRainforest1: null
+  TreeSoil1: null
+  TreeSoil2: null
+  TreeSoilSmall: null
+
+vegetationTypeIndex = 1
+
+for vegetationTypeName of ProjectGaia.VegetationTypes when not ProjectGaia.VegetationTypes[vegetationTypeName]?
+  ProjectGaia.VegetationTypes[vegetationTypeName] = vegetationTypeIndex
+  vegetationTypeIndex++

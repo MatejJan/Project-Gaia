@@ -10,32 +10,29 @@ ProjectGaia.BlockTypes =
 ProjectGaia.BlockMaterials =
   # Air
   Empty: 0
-  Rain: 15
-  Cloud: 16
+  Rain: null
+  Cloud: null
 
   # Earth
-  Rock: 1
-  FrozenRock: 2
-  Soil: 3
-  Snow: 4
-  Gravel: 5
-  Sand: 6
-  Mud: 7
+  Rock: null
+  FrozenRock: null
+  Soil: null
+  Snow: null
+  Gravel: null
+  Sand: null
+  Mud: null
 
   # Water
-  Ice: 8
-  Water: 9
-  Swamp: 10
-  Steam: 11
+  Ice: null
+  Water: null
+  Swamp: null
+  Steam: null
 
-  Unknown1: 12
-  Unknown2: 13
-  Unknown3: 14
-  Unknown4: 17
-  Unknown5: 18
-  Unknown6: 19
-  Unknown7: 20
-  Unknown8: 21
+blockMaterialIndex = 1
+
+for blockMaterialName of ProjectGaia.BlockMaterials when not ProjectGaia.BlockMaterials[blockMaterialName]?
+  ProjectGaia.BlockMaterials[blockMaterialName] = blockMaterialIndex
+  blockMaterialIndex++
 
 class ProjectGaia.BlockMaterialMapping
   constructor: (@mapping) ->
@@ -43,7 +40,7 @@ class ProjectGaia.BlockMaterialMapping
   getBlockMaterialForProperties: (propertiesOrTemperature, humidity) ->
     if _.isObject propertiesOrTemperature
       temperature = propertiesOrTemperature.temperature
-      humidity = propertiesOrTemperature.humidty
+      humidity = propertiesOrTemperature.humidity
 
     else
       temperature = propertiesOrTemperature

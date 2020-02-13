@@ -2,7 +2,7 @@
 (function() {
   'use strict';
   ProjectGaia.VoxelWorld = (function() {
-    var Materials, Types, Vegetation, colorFromRGB;
+    var Materials, Types, Vegetation, colorFromRGB, ref, vegetationTypeIndex, vegetationTypeName;
 
     Types = ProjectGaia.BlockTypes;
 
@@ -18,12 +18,12 @@
 
     VoxelWorld.BlockMaterialProperties[Materials.Cloud] = {
       blockType: Types.Water,
-      color: colorFromRGB(188, 212, 223)
+      color: colorFromRGB(188, 212, 224)
     };
 
     VoxelWorld.BlockMaterialProperties[Materials.Rain] = {
       blockType: Types.Water,
-      color: colorFromRGB(59, 128, 149)
+      color: colorFromRGB(59, 128, 150)
     };
 
     VoxelWorld.BlockMaterialProperties[Materials.Rock] = {
@@ -81,44 +81,16 @@
       color: colorFromRGB(228, 216, 202)
     };
 
-    VoxelWorld.BlockMaterialProperties[Materials.Unknown1] = {
-      blockType: Types.Vegetation,
-      color: colorFromRGB(160, 128, 66)
-    };
-
-    VoxelWorld.BlockMaterialProperties[Materials.Unknown2] = {
-      blockType: Types.Vegetation,
-      color: colorFromRGB(103, 108, 26)
-    };
-
-    VoxelWorld.BlockMaterialProperties[Materials.Unknown3] = {
-      blockType: Types.Vegetation,
-      color: colorFromRGB(89, 65, 38)
-    };
-
-    VoxelWorld.BlockMaterialProperties[Materials.Unknown4] = {
-      blockType: Types.Vegetation,
-      color: colorFromRGB(163, 187, 71)
-    };
-
-    VoxelWorld.BlockMaterialProperties[Materials.Unknown5] = {
-      blockType: Types.Vegetation,
-      color: colorFromRGB(101, 116, 35)
-    };
-
-    VoxelWorld.BlockMaterialProperties[Materials.Unknown6] = {
-      blockType: Types.Vegetation,
-      color: colorFromRGB(130, 77, 69)
-    };
-
-    VoxelWorld.BlockMaterialProperties[Materials.Unknown7] = {
-      blockType: Types.Vegetation,
-      color: colorFromRGB(207, 204, 190)
-    };
-
-    VoxelWorld.BlockMaterialProperties[Materials.Unknown8] = {
-      blockType: Types.Vegetation,
-      color: colorFromRGB(37, 28, 22)
+    VoxelWorld.registerCustomMaterial = function(color) {
+      var materialIndex, materialName;
+      materialIndex = _.keys(ProjectGaia.BlockMaterials).length;
+      materialName = "Unknown" + materialIndex;
+      ProjectGaia.BlockMaterials[materialName] = materialIndex;
+      this.BlockMaterialProperties[materialIndex] = {
+        blockType: Types.Custom,
+        color: color
+      };
+      return materialIndex;
     };
 
     VoxelWorld.getMaterialIndexForColor = function(colorOrR, g, b) {
@@ -164,33 +136,30 @@
 
     VoxelWorld.VegetationProperties = [];
 
-    VoxelWorld.VegetationProperties[Vegetation.Cactus] = {
-      modelName: 'cactus'
-    };
-
-    VoxelWorld.VegetationProperties[Vegetation.PineTree] = {
-      modelName: 'tree-pine-small'
-    };
-
-    VoxelWorld.VegetationProperties[Vegetation.PalmTree] = {
-      modelName: 'tree-palm-desert'
-    };
-
-    VoxelWorld.VegetationProperties[Vegetation.BirchTree] = {
-      modelName: 'tree-birch-soil-tundra'
-    };
+    ref = ProjectGaia.VegetationTypes;
+    for (vegetationTypeName in ref) {
+      vegetationTypeIndex = ref[vegetationTypeName];
+      if (vegetationTypeIndex) {
+        VoxelWorld.VegetationProperties[vegetationTypeIndex] = {
+          modelName: _.kebabCase(vegetationTypeName)
+        };
+      }
+    }
 
     VoxelWorld.load = function(loadingManager) {
-      var i, len, ref, results, vegetationProperties, vegetationTypeIndex;
+      var environmentNames, i, len, ref1, results, urlParameters, vegetationProperties, worldIndex;
+      environmentNames = ['32x32x32-materials', '40x40x30-island-snow-rock', '40x40x30-island-soil-mud', '40x40x39-tunnel', '40x40x40-rock-canyon-sand-soil', '50x50x40-island-soil-sand-mud', '64x64x64-test', '120x120x60-big'];
+      urlParameters = new URLSearchParams(window.location.search);
+      worldIndex = urlParameters.get('world') || 0;
       this.environmentModel = new ProjectGaia.VoxelModel({
-        url: 'content/environments/32x32materials.vox',
+        url: "content/environments/" + environmentNames[worldIndex] + ".vox",
         loadingManager: loadingManager
       });
       this.vegetationModels = [];
-      ref = this.VegetationProperties;
+      ref1 = this.VegetationProperties;
       results = [];
-      for (vegetationTypeIndex = i = 0, len = ref.length; i < len; vegetationTypeIndex = ++i) {
-        vegetationProperties = ref[vegetationTypeIndex];
+      for (vegetationTypeIndex = i = 0, len = ref1.length; i < len; vegetationTypeIndex = ++i) {
+        vegetationProperties = ref1[vegetationTypeIndex];
         if (vegetationTypeIndex) {
           results.push(this.vegetationModels[vegetationTypeIndex] = new ProjectGaia.VoxelModel({
             url: "content/vegetation/" + vegetationProperties.modelName + ".vox",
@@ -202,15 +171,15 @@
     };
 
     function VoxelWorld(options) {
-      var block, blocksInformationArray, dataHeight, dataWidth, i, index, j, k, materialProperties, ref, ref1, ref2, x, y, z;
+      var block, blocksInformationArray, dataHeight, dataWidth, i, index, j, k, materialProperties, ref1, ref2, ref3, x, y, z;
       this.options = options;
       dataWidth = 512;
       dataHeight = 512;
       blocksInformationArray = new Uint8Array(dataWidth * dataHeight * 4);
       blocksInformationArray.fill(255);
-      for (z = i = 0, ref = this.options.depth; 0 <= ref ? i < ref : i > ref; z = 0 <= ref ? ++i : --i) {
-        for (y = j = 0, ref1 = this.options.height; 0 <= ref1 ? j < ref1 : j > ref1; y = 0 <= ref1 ? ++j : --j) {
-          for (x = k = 0, ref2 = this.options.width; 0 <= ref2 ? k < ref2 : k > ref2; x = 0 <= ref2 ? ++k : --k) {
+      for (z = i = 0, ref1 = this.options.depth; 0 <= ref1 ? i < ref1 : i > ref1; z = 0 <= ref1 ? ++i : --i) {
+        for (y = j = 0, ref2 = this.options.height; 0 <= ref2 ? j < ref2 : j > ref2; y = 0 <= ref2 ? ++j : --j) {
+          for (x = k = 0, ref3 = this.options.width; 0 <= ref3 ? k < ref3 : k > ref3; x = 0 <= ref3 ? ++k : --k) {
             index = this.getBlockIndexForCoordinates(x, y, z) * 4;
             block = this.constructor.environmentModel.blocks[x][y][z];
             materialProperties = this.constructor.getPropertiesForMaterial(block.material);

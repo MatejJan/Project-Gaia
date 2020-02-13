@@ -26,15 +26,16 @@ void main() {
   int blockType = blockProperties.r;
   int temperature = blockProperties.g;
   int humidity = blockProperties.b;
+  int blockMaterial = blockProperties.a;
 
   // See if this block needs to be synced with vegetation.
   ivec4 vegetationProperties = ivec4(texture2D(vegetationInformation, blockCoordinates) * 255.0);
   int vegetationMaterial = vegetationProperties.a;
 
-  if (vegetationMaterial > 0) {
-    // Pass through the vegetation material.
-    gl_FragColor = vec4(3, temperature, humidity, vegetationMaterial) / 255.0;
-    return;
+  if (vegetationMaterial > 0 && blockType != 3) {
+    // Add vegetation.
+    blockType = 3;
+    blockMaterial = vegetationMaterial;
 
   } else if (vegetationMaterial == 0 && blockType == 3) {
     // Vegetation needs to be removed.
@@ -129,18 +130,20 @@ void main() {
 
   // Simulate evaporation.
   if (blockType == 0) {
-    // Add humidity from solid blocks.
-    for (int i=0; i<6; i++) {
-      if (!neigborValid[i]) continue;
+    if (humidity== 0) {
+      // Add humidity from solid blocks.
+      for (int i=0; i<6; i++) {
+        if (!neigborValid[i]) continue;
 
-      // evaporation only applies to non-air blocks.
-      if (neighborProperties[i].r == 0) continue;
+        // evaporation only applies to non-air blocks.
+        if (neighborProperties[i].r == 0) continue;
 
-      int neighborHumidity = neighborProperties[i].b;
-      int neighborTemperature = neighborProperties[i].g;
+        int neighborHumidity = neighborProperties[i].b;
+        int neighborTemperature = neighborProperties[i].g;
 
-      if (neighborHumidity > 0 && random(10 + i) < 0.05 * float(neighborTemperature)) {
-        humidity++;
+        if (neighborHumidity > 0 && random(10 + i) < 0.05 * float(neighborTemperature)) {
+          humidity = 1;
+        }
       }
     }
 
@@ -171,9 +174,11 @@ void main() {
 
   // Calculate block type.
 
-  // Calculate block material.
-  float materialDataIndex = float(temperature + humidity * 5);
-  int blockMaterial = int(texture2D(materialData, vec2((materialDataIndex + 0.5) / materialDataSize.x, (float(blockType) + 0.5) / materialDataSize.y)).r * 255.0);
+  // For air, earth, and water, calculate block material from the properties.
+  if (blockType < 2) {
+    float materialDataIndex = float(temperature + humidity * 5);
+    blockMaterial = int(texture2D(materialData, vec2((materialDataIndex + 0.5) / materialDataSize.x, (float(blockType) + 0.5) / materialDataSize.y)).r * 255.0);
+  }
 
   gl_FragColor = vec4(blockType, clampProperty(temperature), clampProperty(humidity), blockMaterial) / 255.0;
 }
