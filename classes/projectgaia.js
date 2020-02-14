@@ -13,7 +13,7 @@
       this.renderer.setClearColor(new THREE.Color(0.05, 0.05, 0.1), 1);
       document.body.appendChild(this.renderer.domElement);
       this.scene = new THREE.Scene;
-      ambientLight = new THREE.AmbientLight(0x404060);
+      ambientLight = new THREE.AmbientLight(0x606090);
       this.scene.add(ambientLight);
       directionalLight = new THREE.DirectionalLight(0xffffdd, 1);
       directionalLight.castShadow = true;
@@ -54,7 +54,7 @@
       model = ProjectGaia.VoxelWorld.environmentModel;
       this.worldSize = {
         width: model.width,
-        height: model.height,
+        height: model.height + 10,
         depth: model.depth
       };
       worldSizeVector = new THREE.Vector3(this.worldSize.width, this.worldSize.height, this.worldSize.depth);

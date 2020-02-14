@@ -21,10 +21,13 @@ class ProjectGaia.Materials
   @getTypeDefines: ->
     defines = {}
 
+    for blockTypes, blockTypesIndex of ProjectGaia.BlockTypes
+      defines["blocks#{blockTypes}"] = blockTypesIndex
+
     for blockMaterial, blockMaterialIndex of ProjectGaia.BlockMaterials
-      defines["materials#{_.upperFirst blockMaterial}"] = blockMaterialIndex
+      defines["materials#{blockMaterial}"] = blockMaterialIndex
 
     for vegetationType, vegetationTypeIndex of ProjectGaia.VegetationTypes
-      defines["vegetation#{_.upperFirst vegetationType}"] = vegetationTypeIndex
+      defines["vegetation#{vegetationType}"] = vegetationTypeIndex
 
     defines

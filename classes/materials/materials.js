@@ -33,17 +33,22 @@
     };
 
     Materials.getTypeDefines = function() {
-      var blockMaterial, blockMaterialIndex, defines, ref, ref1, vegetationType, vegetationTypeIndex;
+      var blockMaterial, blockMaterialIndex, blockTypes, blockTypesIndex, defines, ref, ref1, ref2, vegetationType, vegetationTypeIndex;
       defines = {};
-      ref = ProjectGaia.BlockMaterials;
-      for (blockMaterial in ref) {
-        blockMaterialIndex = ref[blockMaterial];
-        defines["materials" + (_.upperFirst(blockMaterial))] = blockMaterialIndex;
+      ref = ProjectGaia.BlockTypes;
+      for (blockTypes in ref) {
+        blockTypesIndex = ref[blockTypes];
+        defines["blocks" + blockTypes] = blockTypesIndex;
       }
-      ref1 = ProjectGaia.VegetationTypes;
-      for (vegetationType in ref1) {
-        vegetationTypeIndex = ref1[vegetationType];
-        defines["vegetation" + (_.upperFirst(vegetationType))] = vegetationTypeIndex;
+      ref1 = ProjectGaia.BlockMaterials;
+      for (blockMaterial in ref1) {
+        blockMaterialIndex = ref1[blockMaterial];
+        defines["materials" + blockMaterial] = blockMaterialIndex;
+      }
+      ref2 = ProjectGaia.VegetationTypes;
+      for (vegetationType in ref2) {
+        vegetationTypeIndex = ref2[vegetationType];
+        defines["vegetation" + vegetationType] = vegetationTypeIndex;
       }
       return defines;
     };

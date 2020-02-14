@@ -14,7 +14,7 @@ class ProjectGaia
     @scene = new THREE.Scene
 
     # Create lighting.
-    ambientLight = new THREE.AmbientLight 0x404060
+    ambientLight = new THREE.AmbientLight 0x606090
     @scene.add ambientLight
 
     directionalLight = new THREE.DirectionalLight 0xffffdd, 1
@@ -55,7 +55,7 @@ class ProjectGaia
 
     @worldSize =
       width: model.width
-      height: model.height
+      height: model.height + 10
       depth: model.depth
 
     worldSizeVector = new THREE.Vector3 @worldSize.width, @worldSize.height, @worldSize.depth

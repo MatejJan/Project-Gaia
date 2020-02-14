@@ -2,7 +2,7 @@
 (function() {
   'use strict';
   ProjectGaia.VoxelWorld = (function() {
-    var Materials, Types, Vegetation, colorFromRGB, ref, vegetationTypeIndex, vegetationTypeName;
+    var Materials, Types, colorFromRGB, ref, vegetationTypeIndex, vegetationTypeName;
 
     Types = ProjectGaia.BlockTypes;
 
@@ -132,8 +132,6 @@
       return null;
     };
 
-    Vegetation = ProjectGaia.VegetationTypes;
-
     VoxelWorld.VegetationProperties = [];
 
     ref = ProjectGaia.VegetationTypes;
@@ -148,7 +146,7 @@
 
     VoxelWorld.load = function(loadingManager) {
       var environmentNames, i, len, ref1, results, urlParameters, vegetationProperties, worldIndex;
-      environmentNames = ['32x32x32-materials', '40x40x30-island-snow-rock', '40x40x30-island-soil-mud', '40x40x39-tunnel', '40x40x40-rock-canyon-sand-soil', '50x50x40-island-soil-sand-mud', '64x64x64-test', '120x120x60-big'];
+      environmentNames = ['32x32x32-materials', '40x40x30-island-snow-rock', '40x40x30-island-soil-mud', '40x40x39-tunnel', '40x40x40-rock-canyon-sand-soil', '50x50x40-island-soil-sand-mud', '120x120x60-big'];
       urlParameters = new URLSearchParams(window.location.search);
       worldIndex = urlParameters.get('world') || 0;
       this.environmentModel = new ProjectGaia.VoxelModel({
@@ -171,17 +169,18 @@
     };
 
     function VoxelWorld(options) {
-      var block, blocksInformationArray, dataHeight, dataWidth, i, index, j, k, materialProperties, ref1, ref2, ref3, x, y, z;
+      var block, blocksInformationArray, dataHeight, dataWidth, environmentModel, i, index, j, k, materialProperties, ref1, ref2, ref3, x, y, z;
       this.options = options;
       dataWidth = 1024;
       dataHeight = 1024;
       blocksInformationArray = new Uint8Array(dataWidth * dataHeight * 4);
-      blocksInformationArray.fill(255);
-      for (z = i = 0, ref1 = this.options.depth; 0 <= ref1 ? i < ref1 : i > ref1; z = 0 <= ref1 ? ++i : --i) {
-        for (y = j = 0, ref2 = this.options.height; 0 <= ref2 ? j < ref2 : j > ref2; y = 0 <= ref2 ? ++j : --j) {
-          for (x = k = 0, ref3 = this.options.width; 0 <= ref3 ? k < ref3 : k > ref3; x = 0 <= ref3 ? ++k : --k) {
+      blocksInformationArray.fill(0);
+      environmentModel = this.constructor.environmentModel;
+      for (z = i = 0, ref1 = environmentModel.depth; 0 <= ref1 ? i < ref1 : i > ref1; z = 0 <= ref1 ? ++i : --i) {
+        for (y = j = 0, ref2 = environmentModel.height; 0 <= ref2 ? j < ref2 : j > ref2; y = 0 <= ref2 ? ++j : --j) {
+          for (x = k = 0, ref3 = environmentModel.width; 0 <= ref3 ? k < ref3 : k > ref3; x = 0 <= ref3 ? ++k : --k) {
             index = this.getBlockIndexForCoordinates(x, y, z) * 4;
-            block = this.constructor.environmentModel.blocks[x][y][z];
+            block = environmentModel.blocks[x][y][z];
             materialProperties = this.constructor.getPropertiesForMaterial(block.material);
             blocksInformationArray[index] = block.type;
             blocksInformationArray[index + 1] = (materialProperties != null ? materialProperties.temperature : void 0) || 0;

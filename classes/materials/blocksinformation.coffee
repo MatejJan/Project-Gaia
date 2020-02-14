@@ -30,6 +30,8 @@ class ProjectGaia.Materials.BlocksInformation extends THREE.RawShaderMaterial
       ,
         ProjectGaia.Materials.getRandomUniforms()
 
+      defines: ProjectGaia.Materials.getTypeDefines()
+
       vertexShader: ProjectGaia.ComputedTexture.vertexShader
       fragmentShader: @constructor.fragmentShader
 

@@ -146,37 +146,59 @@ void main() {
             // See if we're analyzing the neighbor beneath this block.
             if (dx == 0 && dy == -1 && dz == 0) {
               // See if we should grow this turn.
-              if (random(2) < 0.001) {
+              if (random(2) < 0.0005) {
                 // Analyze the material we're growing on.
                 ivec4 neighborBlockProperties = ivec4(texture2D(blocksInformation, neighborBlockCoordinates) * 255.0);
                 int neighborBlockMaterial = neighborBlockProperties.a;
                 int vegetationTypes[16];
 
-                if (neighborBlockMaterial == materialsSoil) {
-                  // Soil grows pine trees.
+                if (neighborBlockMaterial == materialsFrozenRock || neighborBlockMaterial == materialsSnow) {
+                  vegetationTypes[0] = vegetationTreePineTundra;
+                  vegetationTypes[1] = vegetationShrubCushionPlants1;
+                  vegetationTypes[2] = vegetationShrubCushionPlants2;
+                  vegetationTypes[3] = vegetationShrubCushionPlants3;
+                  vegetationTypes[4] = vegetationTreePineTundra;
+                  vegetationTypes[5] = vegetationTreePineTundra;
+                  vegetationTypes[6] = vegetationTreePineTundra;
+                  vegetationTypes[7] = vegetationTreePineTundra;
+
+                } else if (neighborBlockMaterial == materialsSoil) {
                   vegetationTypes[0] = vegetationTreeBirchSmall;
                   vegetationTypes[1] = vegetationTreeBirchSmall2;
                   vegetationTypes[2] = vegetationTreeOak;
                   vegetationTypes[3] = vegetationTreeOakLarge;
-                  vegetationTypes[4] = vegetationTreePineTundra;
-                  vegetationTypes[5] = vegetationTreeRainforest1;
-                  vegetationTypes[6] = vegetationTreeSoil1;
-                  vegetationTypes[7] = vegetationTreeSoil2;
-                  vegetationTypes[8] = vegetationTreeSoilSmall;
+                  vegetationTypes[4] = vegetationTreeSoil1;
+                  vegetationTypes[5] = vegetationTreeSoil2;
+                  vegetationTypes[6] = vegetationTreeSoilSmall;
+                  vegetationTypes[7] = vegetationShrubSambucus;
+                  vegetationTypes[8] = vegetationShrubBlueberry;
+                  vegetationTypes[9] = vegetationShrubBush1;
+                  vegetationTypes[10] = vegetationShrubBush2;
+                  vegetationTypes[11] = vegetationShrubBushLong;
+                  vegetationTypes[12] = vegetationShrubElderberry;
 
-                } else if (neighborBlockMaterial == materialsMud) {
+                } else if (neighborBlockMaterial == materialsGravel) {
                   vegetationTypes[0] = vegetationShrubAgave;
                   vegetationTypes[1] = vegetationShrubAgave2;
-                  vegetationTypes[2] = vegetationShrubBlueberry;
+                  vegetationTypes[2] = vegetationShrubCushionPlants1;
+                  vegetationTypes[3] = vegetationShrubCushionPlants2;
+                  vegetationTypes[4] = vegetationShrubCushionPlants3;
+                  vegetationTypes[5] = vegetationShrubBush1;
+                  vegetationTypes[6] = vegetationShrubBush2;
+                  vegetationTypes[7] = vegetationShrubDwarfColumnar;
+
+                } else if (neighborBlockMaterial == materialsSand) {
+                  vegetationTypes[0] = vegetationShrubAgave;
+                  vegetationTypes[1] = vegetationShrubAgave2;
+
+                } else if (neighborBlockMaterial == materialsMud) {
+                  vegetationTypes[0] = vegetationTreeOak;
+                  vegetationTypes[1] = vegetationTreeOakLarge;
+                  vegetationTypes[2] = vegetationTreeRainforest1;
                   vegetationTypes[3] = vegetationShrubBush1;
                   vegetationTypes[4] = vegetationShrubBush2;
                   vegetationTypes[5] = vegetationShrubBushLong;
-                  vegetationTypes[6] = vegetationShrubCushionPlants1;
-                  vegetationTypes[7] = vegetationShrubCushionPlants2;
-                  vegetationTypes[8] = vegetationShrubCushionPlants3;
-                  vegetationTypes[9] = vegetationShrubDwarfColumnar;
-                  vegetationTypes[10] = vegetationShrubElderberry;
-                  vegetationTypes[11] = vegetationShrubSambucus;
+                  vegetationTypes[6] = vegetationShrubSambucus;
 
                 } else {
                   continue;

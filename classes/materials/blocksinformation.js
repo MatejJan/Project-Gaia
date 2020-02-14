@@ -45,6 +45,7 @@
             value: _.keys(ProjectGaia.BlockTypes).length
           }
         }, ProjectGaia.Materials.getTimeUniforms(), ProjectGaia.Materials.getRandomUniforms()),
+        defines: ProjectGaia.Materials.getTypeDefines(),
         vertexShader: ProjectGaia.ComputedTexture.vertexShader,
         fragmentShader: this.constructor.fragmentShader
       };

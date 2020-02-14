@@ -84,8 +84,6 @@ class ProjectGaia.VoxelWorld
 
     null
 
-  Vegetation = ProjectGaia.VegetationTypes
-
   @VegetationProperties: []
 
   for vegetationTypeName, vegetationTypeIndex of ProjectGaia.VegetationTypes when vegetationTypeIndex
@@ -99,7 +97,6 @@ class ProjectGaia.VoxelWorld
       '40x40x39-tunnel'
       '40x40x40-rock-canyon-sand-soil'
       '50x50x40-island-soil-sand-mud'
-      '64x64x64-test'
       '120x120x60-big'
     ]
 
@@ -122,14 +119,16 @@ class ProjectGaia.VoxelWorld
     dataHeight = 1024
 
     blocksInformationArray = new Uint8Array dataWidth * dataHeight * 4
-    blocksInformationArray.fill 255
+    blocksInformationArray.fill 0
 
-    for z in [0...@options.depth]
-      for y in [0...@options.height]
-        for x in [0...@options.width]
+    environmentModel = @constructor.environmentModel
+
+    for z in [0...environmentModel.depth]
+      for y in [0...environmentModel.height]
+        for x in [0...environmentModel.width]
           index = @getBlockIndexForCoordinates(x, y, z) * 4
 
-          block = @constructor.environmentModel.blocks[x][y][z]
+          block = environmentModel.blocks[x][y][z]
           materialProperties = @constructor.getPropertiesForMaterial block.material
 
           blocksInformationArray[index] = block.type

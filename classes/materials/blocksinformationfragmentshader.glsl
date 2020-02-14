@@ -32,31 +32,31 @@ void main() {
   ivec4 vegetationProperties = ivec4(texture2D(vegetationInformation, blockCoordinates) * 255.0);
   int vegetationMaterial = vegetationProperties.a;
 
-  if (vegetationMaterial > 0 && blockType != 3) {
+  if (vegetationMaterial > 0 && blockType != blocksVegetation) {
     // Add vegetation.
     blockType = 3;
     blockMaterial = vegetationMaterial;
 
-  } else if (vegetationMaterial == 0 && blockType == 3) {
+  } else if (vegetationMaterial == 0 && blockType == blocksVegetation) {
     // Vegetation needs to be removed.
     blockType = 0;
   }
 
-  ivec3 neigborPositions[6];
-  neigborPositions[0] = blockPosition + ivec3(1, 0, 0);
-  neigborPositions[1] = blockPosition + ivec3(-1, 0.0, 0.0);
-  neigborPositions[2] = blockPosition + ivec3(0, 1, 0);
-  neigborPositions[3] = blockPosition + ivec3(0, -1, 0);
-  neigborPositions[4] = blockPosition + ivec3(0, 0, 1);
-  neigborPositions[5] = blockPosition + ivec3(0, 0, -1);
+  ivec3 neighborPositions[6];
+  neighborPositions[0] = blockPosition + ivec3(1, 0, 0);
+  neighborPositions[1] = blockPosition + ivec3(-1, 0.0, 0.0);
+  neighborPositions[2] = blockPosition + ivec3(0, 1, 0);
+  neighborPositions[3] = blockPosition + ivec3(0, -1, 0);
+  neighborPositions[4] = blockPosition + ivec3(0, 0, 1);
+  neighborPositions[5] = blockPosition + ivec3(0, 0, -1);
 
-  bool neigborValid[6];
+  bool neighborValid[6];
   ivec4 neighborProperties[6];
 
   for (int i=0; i<6; i++) {
-    if (isValidPosition(neigborPositions[i])) {
-      neigborValid[i] = true;
-      neighborProperties[i] = ivec4(texture2D(blocksInformation, getTextureCoordinatesForPosition(neigborPositions[i])) * 255.0);
+    if (isValidPosition(neighborPositions[i])) {
+      neighborValid[i] = true;
+      neighborProperties[i] = ivec4(texture2D(blocksInformation, getTextureCoordinatesForPosition(neighborPositions[i])) * 255.0);
     }
   }
 
@@ -69,7 +69,7 @@ void main() {
   int humidityUp = neighborProperties[2].b;
   int humidityDown = neighborProperties[3].b;
 
-  if (blockType == 0) {
+  if (blockType == blocksAir) {
     // Move warmer air up.
     int temperatureFlowToTop = positive(temperature - temperatureUp);
     int temperatureFlowFromBottom = positive(temperatureDown - temperature);
@@ -78,7 +78,7 @@ void main() {
 
     // Move humidity up with air, except for rain.
     if (humidity < 4) {
-      if (airUp && temperatureFlowToTop > 0 && blockPosition.y < int(worldSize.y - 2.0)) {
+      if (airUp && temperatureFlowToTop > 0 && blockPosition.y < int(worldSize.y - 5.0)) {
         humidity--;
       }
 
@@ -87,11 +87,11 @@ void main() {
       }
     }
 
-    // Apply air heating.
+    // Apply air heating from ground.
     int temperatureFlow = 0;
 
     for (int i=0; i<6; i++) {
-      if (!neigborValid[i]) continue;
+      if (!neighborValid[i]) continue;
 
       // heating only applies to non-air blocks.
       if (neighborProperties[i].r == 0) continue;
@@ -105,43 +105,30 @@ void main() {
     if (temperatureFlow > 0) {
       temperature++;
     }
-  } else {
-    // Apply thermal conduction to non-air blocks.
-    int temperatureFlow = 0;
-
-    for (int i=0; i<6; i++) {
-      if (!neigborValid[i]) continue;
-
-      // Conduction only applies to non-air blocks.
-      if (neighborProperties[i].r == 0) continue;
-
-      int neighborTemperature = neighborProperties[i].g;
-      int temperatureDifference = neighborTemperature - temperature;
-      if (temperatureDifference > 1) temperatureFlow++;
-      if (temperatureDifference < -1) temperatureFlow--;
-    }
-
-    if (temperatureFlow > 0) {
-      temperature++;
-    } else if (temperatureFlow < 0) {
-      temperature--;
-    }
   }
 
   // Simulate evaporation.
-  if (blockType == 0) {
+  if (blockType == blocksAir) {
     if (humidity== 0) {
       // Add humidity from solid blocks.
       for (int i=0; i<6; i++) {
-        if (!neigborValid[i]) continue;
+        if (!neighborValid[i]) continue;
 
-        // evaporation only applies to non-air blocks.
-        if (neighborProperties[i].r == 0) continue;
+        int neighborBlockType = neighborProperties[i].r;
+
+        // Evaporation only applies to non-air blocks.
+        if (neighborBlockType == blocksAir) continue;
+
+        // Water evaporation is higher.
+        float evaporationFactor = neighborBlockType == blocksWater ? 5.0 : 1.0;
+
+        // Evaporation is proportional to temperature.
+        int neighborTemperature = neighborProperties[i].g;
+        evaporationFactor *= float(neighborTemperature);
 
         int neighborHumidity = neighborProperties[i].b;
-        int neighborTemperature = neighborProperties[i].g;
 
-        if (neighborHumidity > 0 && random(10 + i) < 0.05 * float(neighborTemperature)) {
+        if (neighborHumidity > 0 && random(10 + i) < 0.01 * evaporationFactor) {
           humidity = 1;
         }
       }
@@ -162,7 +149,7 @@ void main() {
     }
   } else {
     // Remove humidity due to evaporation.
-    if (humidity > 0 && random(2) < 0.0005 * float(temperature)) {
+    if (humidity > 0 && random(2) < 0.0001 * float(temperature)) {
       humidity--;
     }
 
@@ -172,10 +159,38 @@ void main() {
     }
   }
 
+  // Even out humidity in water.
+  if (blockType == blocksWater) {
+    int humidityFlow = 0;
+
+    for (int i=0; i<6; i++) {
+      if (!neighborValid[i]) continue;
+      if (neighborProperties[i].r != blocksWater) continue;
+
+      int neighborHumidity = neighborProperties[i].b;
+      int humidityDifference = neighborHumidity - humidity;
+
+      if (humidity == 0) {
+        // Always flow to zero humidity.
+        if (humidityDifference > 0) humidityFlow++;
+      } else {
+        // Otherwise only flow when difference is bigger than 1.
+        if (humidityDifference > 1) humidityFlow++;
+        if (humidityDifference < -1) humidityFlow--;
+      }
+    }
+
+    if (humidityFlow > 0) {
+      humidity++;
+    } else if (humidityFlow < 0) {
+      humidity--;
+    }
+  }
+
   // Calculate block type.
 
   // For air, earth, and water, calculate block material from the properties.
-  if (blockType < 2) {
+  if (blockType <= blocksWater) {
     float materialDataIndex = float(temperature + humidity * 5);
     blockMaterial = int(texture2D(materialData, vec2((materialDataIndex + 0.5) / materialDataSize.x, (float(blockType) + 0.5) / materialDataSize.y)).r * 255.0);
   }
