@@ -36,7 +36,11 @@ void main() {
     vec3 blockCenter = blockCoordinates + vec3(0.5, 0.5, -0.5);
     vec3 relativePosition = position - blockCenter;
     float size = 0.1;
-    if (visualizeHumidity) size = blockInformation.b * 255.0 / 10.0;
+    if (visualizeTemperature || visualizeHumidity) {
+      size = 0.0;
+      if (visualizeTemperature) size = blockInformation.g * 255.0 / 20.0;
+      if (visualizeHumidity) size = max(size, blockInformation.b * 255.0 / 10.0);
+    }
     transformed = blockCenter + relativePosition * size;
   }
 
@@ -58,7 +62,15 @@ void main() {
 
   if (visualizeTemperature || visualizeHumidity) {
     vMaterialDiffuse = vec3(0.0);
-    if (visualizeTemperature) vMaterialDiffuse.r = blockInformation.g * 255.0 / 4.0;
+
+    if (visualizeTemperature) {
+      if (blockMaterial == 0) {
+        vMaterialDiffuse.r = blockInformation.g > 0.0 ? 255.0: 0.0;
+      } else {
+        vMaterialDiffuse.r = blockInformation.g * 255.0 / 4.0;
+      }
+    }
+
     if (visualizeHumidity) {
       if (blockMaterial == 0) {
         vMaterialDiffuse.b = blockInformation.b > 0.0 ? 255.0: 0.0;

@@ -145,10 +145,13 @@ void main() {
           } else {
             // See if we're analyzing the neighbor beneath this block.
             if (dx == 0 && dy == -1 && dz == 0) {
-              // See if we should grow this turn.
-              if (random(2) < 0.0005) {
+              // See if we should plant this turn.
+              ivec4 neighborBlockProperties = ivec4(texture2D(blocksInformation, neighborBlockCoordinates) * 255.0);
+              int neighborTemperature = neighborBlockProperties.g;
+              int neighborHumidity = neighborBlockProperties.b;
+
+              if (random(2) < 0.0002 * float(1 + min(neighborTemperature, neighborHumidity) + neighborHumidity / 2)) {
                 // Analyze the material we're growing on.
-                ivec4 neighborBlockProperties = ivec4(texture2D(blocksInformation, neighborBlockCoordinates) * 255.0);
                 int neighborBlockMaterial = neighborBlockProperties.a;
                 int vegetationTypes[16];
 

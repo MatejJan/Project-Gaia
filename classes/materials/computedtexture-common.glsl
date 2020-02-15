@@ -14,6 +14,12 @@ int mod(int a, int b) {
   return a - whole * b;
 }
 
+int sign(int a) {
+  if (a > 0) return 1;
+  if (a < 0) return -1;
+  return 0;
+}
+
 ivec3 getPositionForTextureCoordinates(vec2 textureCoordinates) {
   int width = int(worldSize.x);
   int height = int(worldSize.y);

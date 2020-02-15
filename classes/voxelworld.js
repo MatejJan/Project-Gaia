@@ -171,7 +171,7 @@
     function VoxelWorld(options) {
       var block, blocksInformationArray, dataHeight, dataWidth, environmentModel, i, index, j, k, materialProperties, ref1, ref2, ref3, x, y, z;
       this.options = options;
-      dataWidth = 1024;
+      dataWidth = 2048;
       dataHeight = 1024;
       blocksInformationArray = new Uint8Array(dataWidth * dataHeight * 4);
       blocksInformationArray.fill(0);

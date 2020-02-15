@@ -54,7 +54,7 @@
       model = ProjectGaia.VoxelWorld.environmentModel;
       this.worldSize = {
         width: model.width,
-        height: model.height + 10,
+        height: model.height + 20,
         depth: model.depth
       };
       worldSizeVector = new THREE.Vector3(this.worldSize.width, this.worldSize.height, this.worldSize.depth);

@@ -55,7 +55,7 @@ class ProjectGaia
 
     @worldSize =
       width: model.width
-      height: model.height + 10
+      height: model.height + 20
       depth: model.depth
 
     worldSizeVector = new THREE.Vector3 @worldSize.width, @worldSize.height, @worldSize.depth

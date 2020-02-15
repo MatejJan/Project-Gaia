@@ -115,7 +115,7 @@ class ProjectGaia.VoxelWorld
         loadingManager: loadingManager
 
   constructor: (@options) ->
-    dataWidth = 1024
+    dataWidth = 2048
     dataHeight = 1024
 
     blocksInformationArray = new Uint8Array dataWidth * dataHeight * 4
