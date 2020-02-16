@@ -23,6 +23,7 @@ body .start-button {
   transition: opacity 1s;
   transform: translateZ(0);
   font-size: 100px;
+  cursor: pointer;
 }
 html .start-button.fade-out,
 body .start-button.fade-out {
@@ -34,7 +35,7 @@ body .worlds {
   left: 0;
   bottom: 0;
   z-index: 3;
-  opacity: 0.05;
+  opacity: 0.3;
   padding: 10px;
   transition: opacity 0.5s;
 }
@@ -46,7 +47,7 @@ html .worlds:hover,
 body .worlds:hover,
 html .worlds.start,
 body .worlds.start {
-  opacity: 0.3;
+  opacity: 0.6;
 }
 html .worlds .world-link,
 body .worlds .world-link {
@@ -78,7 +79,7 @@ body .controls {
   right: 0;
   bottom: 0;
   z-index: 1;
-  opacity: 0.15;
+  opacity: 0.3;
   padding: 10px;
   transition: opacity 0.5s;
 }
@@ -88,7 +89,7 @@ body .controls.fade-out {
 }
 html .controls:hover,
 body .controls:hover {
-  opacity: 0.3;
+  opacity: 0.6;
 }
 html .controls button,
 body .controls button {

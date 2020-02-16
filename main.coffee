@@ -48,6 +48,7 @@ startButton = document.getElementsByClassName('start-button')[0]
 controls = document.getElementsByClassName('controls')[0]
 audioButton = document.getElementsByClassName('audio-button')[0]
 fullscreenButton = document.getElementsByClassName('fullscreen-button')[0]
+body = document.getElementsByTagName('body')[0]
 
 for worldButton in worldButtons
   do (worldButton) =>
@@ -82,10 +83,23 @@ audioButton.onclick = =>
   audio = not audio
 
 fullscreenButton.onclick = =>
-  if document.fullscreenElement
-    document.exitFullscreen()
-    worlds.classList.remove 'fade-out'
+  if document.fullscreenElement || document.webkitFullscreenElement
+    document.exitFullscreen?()
+    document.webkitExitFullscreen?()
 
   else
-    document.getElementsByTagName('body')[0].requestFullscreen()
+    if body.requestFullscreen
+      body.requestFullscreen()
+
+    else if body.webkitRequestFullscreen
+      body.webkitRequestFullscreen()
+
+onFullscreenChange = (event) =>
+  if document.fullscreenElement || document.webkitFullscreenElement
     worlds.classList.add 'fade-out'
+
+  else
+    worlds.classList.remove 'fade-out'
+
+body.addEventListener 'fullscreenchange', onFullscreenChange
+body.addEventListener 'webkitfullscreenchange', onFullscreenChange
