@@ -137,10 +137,10 @@
       this.voxelMesh.castShadow = true;
       this.voxelMesh.receiveShadow = true;
       this.voxelMesh.customDepthMaterial = this.voxelWorldDepthMaterial;
-      this.voxelMesh.position.set(-this.worldSize.width / 2, -5, -this.worldSize.depth / 2);
+      this.voxelMesh.position.set(-this.worldSize.width / 2, -10, -this.worldSize.depth / 2);
       this.scene.add(this.voxelMesh);
       this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 400);
-      this.camera.position.set(0, this.worldSize.height, this.worldSize.depth * 1.75);
+      this.camera.position.set(-this.worldSize.depth * 1.2, this.worldSize.height, this.worldSize.depth * 1.2);
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
       document.addEventListener('keypress', (function(_this) {
         return function(event) {
@@ -198,7 +198,7 @@
       skyColorProgress = (timeOfDay * 8) % 1;
       this.sky.color.copy(this.skyColors.top[skyColorIndex]).lerp(this.skyColors.top[skyColorIndex + 1], skyColorProgress);
       this.sky.groundColor.copy(this.skyColors.bottom[skyColorIndex]).lerp(this.skyColors.bottom[skyColorIndex + 1], skyColorProgress);
-      sunAngle = -Math.PI / 2 - timeOfDay * Math.PI * 2;
+      sunAngle = -Math.PI / 2 + timeOfDay * Math.PI * 2;
       sunDistance = (Math.sqrt(Math.pow(this.worldSize.width, 2), Math.pow(this.worldSize.height, 2)) + this.sun.shadow.camera.near) * 1.1;
       this.sun.position.set(Math.cos(sunAngle) * sunDistance, Math.sin(sunAngle) * sunDistance, sunDistance * 0.5);
       this.sun.color.copy(this.sunColors[skyColorIndex]).lerp(this.sunColors[skyColorIndex + 1], skyColorProgress);

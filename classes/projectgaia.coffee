@@ -143,12 +143,12 @@ class ProjectGaia
     @voxelMesh.castShadow = true
     @voxelMesh.receiveShadow = true
     @voxelMesh.customDepthMaterial = @voxelWorldDepthMaterial
-    @voxelMesh.position.set -@worldSize.width / 2, -5, -@worldSize.depth / 2
+    @voxelMesh.position.set -@worldSize.width / 2, -10, -@worldSize.depth / 2
     @scene.add @voxelMesh
 
     # Create the camera.
     @camera = new THREE.PerspectiveCamera 45, window.innerWidth / window.innerHeight, 1, 400
-    @camera.position.set 0, @worldSize.height, @worldSize.depth * 1.75
+    @camera.position.set -@worldSize.depth * 1.2, @worldSize.height, @worldSize.depth * 1.2
 
     # Create controls.
     @controls = new THREE.OrbitControls @camera, @renderer.domElement
@@ -221,7 +221,7 @@ class ProjectGaia
     @sky.groundColor.copy(@skyColors.bottom[skyColorIndex]).lerp @skyColors.bottom[skyColorIndex + 1], skyColorProgress
 
     # Update sun position.
-    sunAngle = -Math.PI / 2 - timeOfDay * Math.PI * 2
+    sunAngle = -Math.PI / 2 + timeOfDay * Math.PI * 2
     sunDistance = (Math.sqrt(@worldSize.width ** 2, @worldSize.height ** 2) + @sun.shadow.camera.near) * 1.1
     @sun.position.set Math.cos(sunAngle) * sunDistance, Math.sin(sunAngle) * sunDistance, sunDistance * 0.5
     @sun.color.copy(@sunColors[skyColorIndex]).lerp @sunColors[skyColorIndex + 1], skyColorProgress
