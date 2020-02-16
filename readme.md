@@ -1,7 +1,5 @@
 # Project Gaia
 
-**Voxel world nature simulation**
-
 Live demo: [Project Gaia](https://matejjan.github.io/Project-Gaia/index.html?world=1)
 
 Project Gaia is a calm simulation of nature reclaiming the wasteland that humanity left behind.
