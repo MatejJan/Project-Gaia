@@ -93,7 +93,7 @@ class ProjectGaia.VoxelWorld
     environmentNames = [
       '32x32x32-materials'
       '40x40x30-island-snow-rock'
-      '40x40x30-island-soil-mud'
+      '40x40x40-island-soil-mud-lighthouse'
       '40x40x39-tunnel'
       '40x40x40-rock-canyon-sand-soil'
       '50x50x40-island-soil-sand-mud'

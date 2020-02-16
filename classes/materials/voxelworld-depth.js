@@ -20,9 +20,16 @@
           },
           worldSize: {
             value: options.worldSizeVector
+          },
+          drawWater: {
+            value: true
+          },
+          drawSolids: {
+            value: true
           }
-        }),
-        vertexShader: "#include <voxelworld_pars_vertex>\nvoid main() {\n  bool discardInvisible = true;\n  #include <voxelworld_discardinvisible_vertex>\n  #include <begin_vertex>\n  #include <project_vertex>\n  #include <worldpos_vertex>\n}",
+        }, ProjectGaia.Materials.getTimeUniforms()),
+        defines: ProjectGaia.Materials.getTypeDefines(),
+        vertexShader: "#include <voxelworld_pars_vertex>\nvoid main() {\n  bool discardInvisible = true;\n  #include <voxelworld_blockinformation>\n  #include <voxelworld_discardinvisible_vertex>\n  #include <begin_vertex>\n  #include <voxelworld_waterwaves_vertex>\n  #include <project_vertex>\n  #include <worldpos_vertex>\n}",
         fragmentShader: "#include <packing>\nvoid main() {gl_FragColor = packDepthToRGBA(gl_FragCoord.z);}"
       };
       Depth.__super__.constructor.call(this, parameters);
@@ -30,6 +37,7 @@
     }
 
     Depth.prototype.update = function(gameTime) {
+      ProjectGaia.Materials.updateTimeUniforms(this.uniforms, gameTime);
       return this.uniforms.blocksInformation.value = this.options.blocksInformationTexture.texture;
     };
 

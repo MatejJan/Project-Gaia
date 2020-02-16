@@ -11,8 +11,14 @@ class ProjectGaia.Materials.VoxelWorld extends THREE.ShaderMaterial
     new THREE.FileLoader(loadingManager).load 'classes/materials/voxelworld-parameters-vertex.glsl', (shaderChunk) =>
       THREE.ShaderChunk.voxelworld_pars_vertex = shaderChunk
 
+    new THREE.FileLoader(loadingManager).load 'classes/materials/voxelworld-blockinformation.glsl', (shaderChunk) =>
+      THREE.ShaderChunk.voxelworld_blockinformation = shaderChunk
+
     new THREE.FileLoader(loadingManager).load 'classes/materials/voxelworld-discardinvisible-vertex.glsl', (shaderChunk) =>
       THREE.ShaderChunk.voxelworld_discardinvisible_vertex = shaderChunk
+
+    new THREE.FileLoader(loadingManager).load 'classes/materials/voxelworld-waterwaves-vertex.glsl', (shaderChunk) =>
+      THREE.ShaderChunk.voxelworld_waterwaves_vertex = shaderChunk
 
     new THREE.FileLoader(loadingManager).load 'classes/materials/computedtexture-common.glsl', (shaderChunk) =>
       THREE.ShaderChunk.computedtexture_common = shaderChunk
@@ -28,6 +34,7 @@ class ProjectGaia.Materials.VoxelWorld extends THREE.ShaderMaterial
       transparent: true
       side: THREE.FrontSide
       shadowSide: THREE.FrontSide
+      wireframe: false
 
       uniforms: _.extend
         visualizeTemperature:
@@ -50,16 +57,26 @@ class ProjectGaia.Materials.VoxelWorld extends THREE.ShaderMaterial
           value: options.worldSizeVector
         blockTypesCount:
           value: _.keys(ProjectGaia.BlockTypes).length
+        drawWater:
+          value: false
+        drawSolids:
+          value: true
       ,
         ProjectGaia.Materials.getTimeUniforms()
       ,
         THREE.UniformsLib.lights
+
+      defines: ProjectGaia.Materials.getTypeDefines()
 
       vertexShader: @constructor.vertexShader
       fragmentShader: @constructor.fragmentShader
 
     super parameters
     @options = options
+
+  setWaterPass: (waterPass) ->
+    @uniforms.drawWater.value = waterPass
+    @uniforms.drawSolids.value = not waterPass
 
   update: (gameTime) ->
     # Update time.

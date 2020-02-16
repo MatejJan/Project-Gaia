@@ -1,4 +1,3 @@
-uniform float totalGameTime;
 uniform int blockTypesCount;
 uniform sampler2D tileset;
 uniform vec2 tilesetSize;
@@ -6,48 +5,59 @@ uniform bool visualizeTemperature;
 uniform bool visualizeHumidity;
 
 varying vec3 vMaterialDiffuse;
-varying vec3 vMaterialEmmisive;
 varying float vMaterialOpacity;
+varying float vMaterialReflectivity;
 
 varying vec3 vLightFront;
 varying vec3 vIndirectFront;
 varying vec3 vIndirectFactor;
 varying vec2 vUv;
+varying vec3 vNormal;
+varying vec3 vViewPosition;
+varying vec3 vMainLightDirection;
 
 #include <common>
 #include <lights_pars_begin>
 #include <shadowmap_pars_vertex>
 #include <voxelworld_pars_vertex>
 
+#define computeWaterNormal
+
 void main() {
   bool textured = false;
 
   bool discardInvisible = !(visualizeTemperature || visualizeHumidity);
 
+  #include <voxelworld_blockinformation>
   #include <voxelworld_discardinvisible_vertex>
 
   #include <beginnormal_vertex>
   #include <defaultnormal_vertex>
-
   #include <begin_vertex>
 
   // Make empty blocks smaller.
-  if (blockMaterial == 0) {
+  if (blockMaterial == materialsEmpty) {
     vec3 blockCenter = blockCoordinates + vec3(0.5, 0.5, -0.5);
     vec3 relativePosition = position - blockCenter;
     float size = 0.1;
     if (visualizeTemperature || visualizeHumidity) {
       size = 0.0;
-      if (visualizeTemperature) size = blockInformation.g * 255.0 / 20.0;
-      if (visualizeHumidity) size = max(size, blockInformation.b * 255.0 / 10.0);
+      if (visualizeTemperature) size = float(temperature) / 20.0;
+      if (visualizeHumidity) size = max(size, float(humidity) / 10.0);
     }
     transformed = blockCenter + relativePosition * size;
   }
+
+  #include <voxelworld_waterwaves_vertex>
+
+  vNormal = normalize(transformedNormal);
 
   #include <project_vertex>
   #include <worldpos_vertex>
   #include <lights_lambert_vertex>
   #include <shadowmap_vertex>
+  vViewPosition = -mvPosition.xyz;
+  vMainLightDirection = directionalLights[0].direction;
 
   if (textured) {
     vMaterialDiffuse = vec3(1.0);
@@ -57,47 +67,67 @@ void main() {
     vMaterialDiffuse = texture2D(materialData, blockMaterialColorCoordinates).rgb;
   }
 
-  vMaterialEmmisive = vec3(0.0);
   vMaterialOpacity = 1.0;
+  vMaterialReflectivity = 0.0;
 
   if (visualizeTemperature || visualizeHumidity) {
     vMaterialDiffuse = vec3(0.0);
 
     if (visualizeTemperature) {
-      if (blockMaterial == 0) {
-        vMaterialDiffuse.r = blockInformation.g > 0.0 ? 255.0: 0.0;
+      if (blockMaterial == materialsEmpty) {
+        vMaterialDiffuse.r = temperature > 0 ? 255.0: 0.0;
       } else {
-        vMaterialDiffuse.r = blockInformation.g * 255.0 / 4.0;
+        vMaterialDiffuse.r = float(temperature) / 4.0;
       }
     }
 
     if (visualizeHumidity) {
-      if (blockMaterial == 0) {
-        vMaterialDiffuse.b = blockInformation.b > 0.0 ? 255.0: 0.0;
+      if (blockMaterial == materialsEmpty) {
+        vMaterialDiffuse.b = humidity > 0 ? 255.0: 0.0;
       } else {
-        vMaterialDiffuse.b = blockInformation.b * 255.0 / 4.0;
+        vMaterialDiffuse.b = float(humidity) / 4.0;
       }
     }
   }
 
   // Make empty blocks transparent.
-  if (blockMaterial == 0) {
-    vMaterialOpacity = max(vMaterialDiffuse.r, vMaterialDiffuse.b);
+  if (blockMaterial == materialsEmpty) {
+    vMaterialOpacity = float(max(temperature, humidity)) / 4.0;
+  }
+
+  // Make water semi-transparent and shiny.
+  if (blockMaterial == materialsWater || blockMaterial == materialsRain) {
+    vMaterialOpacity = blockMaterial == materialsWater ? 0.3 : 0.7;
+    vMaterialReflectivity = 0.5;
   }
 
   // Calculate ambient occlusion.
+  ivec3 shadowSamplePosition[4];
+  shadowSamplePosition[0] = ivec3(position);
+  shadowSamplePosition[1] = ivec3(position + vec3(-1, 0, 0));
+  shadowSamplePosition[2] = ivec3(position + vec3(-1, 0, 1));
+  shadowSamplePosition[3] = ivec3(position + vec3(0, 0, 1));
+
   float shadowBlockCount = 0.0;
-  ivec3 shadowSamplePosition = ivec3(position);
+  for (int i = 0; i < 4; i++) {
+    int shadowSampleBlock = getBlockMaterialForPosition(shadowSamplePosition[i]);
+    if (shadowSampleBlock != materialsEmpty) {
+      if (shadowSampleBlock == materialsWater) {
+        // We're in water so shadows grow twice as slow. Look one more up if there's something there as well.
+        shadowSampleBlock = getBlockMaterialForPosition(shadowSamplePosition[i] + ivec3(0, 1, 0));
+        if (shadowSampleBlock != materialsEmpty) {
+          shadowBlockCount++;
+        } else {
+          shadowBlockCount += 0.5;
+        }
+      } else {
+        shadowBlockCount++;
+      }
+    }
+  }
 
-  if (getBlockMaterialForPosition(shadowSamplePosition) > 0) {shadowBlockCount++;}
-  shadowSamplePosition.x--;
-  if (getBlockMaterialForPosition(shadowSamplePosition) > 0) {shadowBlockCount++;}
-  shadowSamplePosition.z++;
-  if (getBlockMaterialForPosition(shadowSamplePosition) > 0) {shadowBlockCount++;}
-  shadowSamplePosition.x++;
-  if (getBlockMaterialForPosition(shadowSamplePosition) > 0) {shadowBlockCount++;}
-
-  vIndirectFactor = vec3(1.0 - shadowBlockCount / 4.0);
+  float maxShadow = blockMaterial == materialsCloud ? 2.0 : 3.0;
+  vIndirectFactor = vec3(1.0 - min(maxShadow, shadowBlockCount) / 4.0);
 
   if (textured) {
     // Calculate texture coordinates.

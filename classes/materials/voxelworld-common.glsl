@@ -6,6 +6,32 @@ uniform vec2 blocksInformationSize;
 uniform sampler2D materialData;
 uniform vec2 materialDataSize;
 
+int mod(int a, int b) {
+  int whole = a / b;
+  return a - whole * b;
+}
+
+int sign(int a) {
+  if (a > 0) return 1;
+  if (a < 0) return -1;
+  return 0;
+}
+
+int max(int a, int b) {
+  if (a > b) return a;
+  return b;
+}
+
+int min(int a, int b) {
+  if (a < b) return a;
+  return b;
+}
+
+int abs(int a) {
+  if (a < 0) return -a;
+  return a;
+}
+
 vec2 getTextureCoordinatesForPosition(ivec3 position) {
   int width = int(worldSize.x);
   int height = int(worldSize.y);

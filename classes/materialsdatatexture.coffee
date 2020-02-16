@@ -4,7 +4,7 @@ class ProjectGaia.MaterialsDataTexture extends THREE.DataTexture
   constructor: ->
     blockTypesCount = _.keys(ProjectGaia.BlockTypes).length
 
-    width = 32
+    width = 256
     height = blockTypesCount + 1
 
     dataArray = new Uint8Array width * height * 3

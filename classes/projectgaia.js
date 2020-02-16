@@ -5,30 +5,57 @@
 
   ProjectGaia = (function() {
     function ProjectGaia() {
-      var ambientLight, directionalLight, shadowCameraHalfSize;
+      var createSkyColors, hexValue, shadowCameraHalfSize;
       this.renderer = new THREE.WebGLRenderer;
       this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.autoClear = false;
       this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.autoUpdate = false;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       this.renderer.setClearColor(new THREE.Color(0.05, 0.05, 0.1), 1);
       document.body.appendChild(this.renderer.domElement);
       this.scene = new THREE.Scene;
-      ambientLight = new THREE.AmbientLight(0x606090);
-      this.scene.add(ambientLight);
-      directionalLight = new THREE.DirectionalLight(0xffffdd, 1);
-      directionalLight.castShadow = true;
-      shadowCameraHalfSize = 50;
-      directionalLight.shadow.camera.left = -shadowCameraHalfSize;
-      directionalLight.shadow.camera.right = shadowCameraHalfSize;
-      directionalLight.shadow.camera.top = shadowCameraHalfSize;
-      directionalLight.shadow.camera.bottom = -shadowCameraHalfSize;
-      directionalLight.shadow.camera.near = 10;
-      directionalLight.shadow.camera.far = 150;
-      directionalLight.shadow.mapSize.width = 4096;
-      directionalLight.shadow.mapSize.height = 4096;
-      directionalLight.shadow.bias = -0.001;
-      directionalLight.position.set(30, 50, 40);
-      this.scene.add(directionalLight);
+      this.sky = new THREE.HemisphereLight;
+      this.scene.add(this.sky);
+      createSkyColors = (function(_this) {
+        return function(hexValues) {
+          var hexValue, hsl, i, len, results;
+          results = [];
+          for (i = 0, len = hexValues.length; i < len; i++) {
+            hexValue = hexValues[i];
+            hsl = new THREE.Color(hexValue).getHSL();
+            results.push(new THREE.Color().setHSL(hsl.h, hsl.s * 1.2, hsl.l * 1.2));
+          }
+          return results;
+        };
+      })(this);
+      this.skyColors = {
+        top: createSkyColors([0x101b31, 0x101b31, 0x192c4c, 0x285e9a, 0x4471b2, 0x375696, 0x6f7d9a, 0x474b61, 0x101b31]),
+        bottom: createSkyColors([0x213867, 0x213867, 0xb99b84, 0xb9bdc3, 0xb5d7f3, 0xc3dcf8, 0xf1dcb3, 0xaa6748, 0x213867])
+      };
+      this.sun = new THREE.DirectionalLight(0, 1);
+      this.sun.castShadow = true;
+      shadowCameraHalfSize = 80;
+      this.sun.shadow.camera.left = -shadowCameraHalfSize;
+      this.sun.shadow.camera.right = shadowCameraHalfSize;
+      this.sun.shadow.camera.top = shadowCameraHalfSize;
+      this.sun.shadow.camera.bottom = -shadowCameraHalfSize;
+      this.sun.shadow.camera.near = 10;
+      this.sun.shadow.camera.far = 200;
+      this.sun.shadow.mapSize.width = 4096;
+      this.sun.shadow.mapSize.height = 4096;
+      this.sun.shadow.bias = -0.001;
+      this.scene.add(this.sun);
+      this.sunColors = (function() {
+        var i, len, ref, results;
+        ref = [0, 0, 0xaf855e, 0xffffca, 0xffffca, 0xffffca, 0xeec137, 0xd86726, 0];
+        results = [];
+        for (i = 0, len = ref.length; i < len; i++) {
+          hexValue = ref[i];
+          results.push(new THREE.Color(hexValue));
+        }
+        return results;
+      })();
       this.loadingManager = new THREE.LoadingManager((function(_this) {
         return function() {
           console.log("Loading finished!");
@@ -155,17 +182,32 @@
         this.simulationGameTime.totalGameTime += this.simulationGameTime.elapsedGameTime;
         this.blocksInformationMaterial.update(this.simulationGameTime);
         this.blocksInformationTexture.update(this.simulationGameTime);
-        this.voxelWorldMaterial.update(this.simulationGameTime);
-        this.voxelWorldDepthMaterial.update(this.simulationGameTime);
       }
+      this.voxelWorldMaterial.update(gameTime);
+      this.voxelWorldDepthMaterial.update(gameTime);
       return this.controls.update(gameTime);
     };
 
     ProjectGaia.prototype.draw = function(gameTime) {
+      var skyColorIndex, skyColorProgress, sunAngle, sunDistance, timeOfDay;
       if (!this.initialized) {
         return;
       }
+      timeOfDay = (0.35 + gameTime.totalGameTime * 0.003) % 1;
+      skyColorIndex = Math.floor(timeOfDay * 8);
+      skyColorProgress = (timeOfDay * 8) % 1;
+      this.sky.color.copy(this.skyColors.top[skyColorIndex]).lerp(this.skyColors.top[skyColorIndex + 1], skyColorProgress);
+      this.sky.groundColor.copy(this.skyColors.bottom[skyColorIndex]).lerp(this.skyColors.bottom[skyColorIndex + 1], skyColorProgress);
+      sunAngle = -Math.PI / 2 - timeOfDay * Math.PI * 2;
+      sunDistance = (Math.sqrt(Math.pow(this.worldSize.width, 2), Math.pow(this.worldSize.height, 2)) + this.sun.shadow.camera.near) * 1.1;
+      this.sun.position.set(Math.cos(sunAngle) * sunDistance, Math.sin(sunAngle) * sunDistance, sunDistance * 0.5);
+      this.sun.color.copy(this.sunColors[skyColorIndex]).lerp(this.sunColors[skyColorIndex + 1], skyColorProgress);
       this.renderer.setRenderTarget(null);
+      this.renderer.clear();
+      this.voxelWorldMaterial.setWaterPass(false);
+      this.renderer.shadowMap.needsUpdate = true;
+      this.renderer.render(this.scene, this.camera);
+      this.voxelWorldMaterial.setWaterPass(true);
       return this.renderer.render(this.scene, this.camera);
     };
 

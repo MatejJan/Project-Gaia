@@ -10,7 +10,7 @@
     function MaterialsDataTexture() {
       var blockMaterial, blockMaterialIndex, blockMaterialProperties, blockType, blockTypeIndex, blockTypesCount, color, dataArray, height, humidity, i, j, materialMapping, paletteRow, pixelOffset, ref, ref1, temperature, width, x, y;
       blockTypesCount = _.keys(ProjectGaia.BlockTypes).length;
-      width = 32;
+      width = 256;
       height = blockTypesCount + 1;
       dataArray = new Uint8Array(width * height * 3);
       ref = ProjectGaia.BlockTypes;

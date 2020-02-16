@@ -246,9 +246,8 @@ void main() {
     }
   } else {
     // Remove humidity due to evaporation.
-    if (humidity > 0 && random(2) < 0.0001 * float(temperature)) {
+    if (airUp && humidity > 0 && random(2) < 0.0001 * float(temperature)) {
       humidity--;
-      temperature++;
     }
   }
 
@@ -319,7 +318,6 @@ void main() {
     // Accept rain.
     if (airUp && humidityUp == 4) {
       humidity++;
-      if (temperature == 4) temperature--;
     }
   }
 

@@ -5,7 +5,9 @@ class ProjectGaia
     # Create the renderer.
     @renderer = new THREE.WebGLRenderer
     @renderer.setSize window.innerWidth, window.innerHeight
+    @renderer.autoClear = false
     @renderer.shadowMap.enabled = true
+    @renderer.shadowMap.autoUpdate = false
     @renderer.shadowMap.type = THREE.PCFSoftShadowMap
     @renderer.setClearColor new THREE.Color(0.05, 0.05, 0.1), 1
     document.body.appendChild @renderer.domElement
@@ -14,23 +16,36 @@ class ProjectGaia
     @scene = new THREE.Scene
 
     # Create lighting.
-    ambientLight = new THREE.AmbientLight 0x606090
-    @scene.add ambientLight
+    @sky = new THREE.HemisphereLight
+    @scene.add @sky
 
-    directionalLight = new THREE.DirectionalLight 0xffffdd, 1
-    directionalLight.castShadow = true
-    shadowCameraHalfSize = 50
-    directionalLight.shadow.camera.left = -shadowCameraHalfSize
-    directionalLight.shadow.camera.right = shadowCameraHalfSize
-    directionalLight.shadow.camera.top = shadowCameraHalfSize
-    directionalLight.shadow.camera.bottom = -shadowCameraHalfSize
-    directionalLight.shadow.camera.near = 10
-    directionalLight.shadow.camera.far = 150
-    directionalLight.shadow.mapSize.width = 4096
-    directionalLight.shadow.mapSize.height = 4096
-    directionalLight.shadow.bias = -0.001
-    directionalLight.position.set 30, 50, 40
-    @scene.add directionalLight
+    # Define ambient light colors (12AM, 3, 6, 9, 12PM, 3, 6, 9, 12AM)
+    createSkyColors = (hexValues) =>
+      for hexValue in hexValues
+        hsl = new THREE.Color(hexValue).getHSL()
+        new THREE.Color().setHSL hsl.h, hsl.s * 1.2, hsl.l * 1.2
+
+    @skyColors =
+      top: createSkyColors [0x101b31, 0x101b31, 0x192c4c, 0x285e9a, 0x4471b2, 0x375696, 0x6f7d9a, 0x474b61, 0x101b31]
+      bottom: createSkyColors [0x213867, 0x213867, 0xb99b84, 0xb9bdc3, 0xb5d7f3, 0xc3dcf8, 0xf1dcb3, 0xaa6748, 0x213867]
+
+    # Create sunlight.
+    @sun = new THREE.DirectionalLight 0, 1
+    @sun.castShadow = true
+    shadowCameraHalfSize = 80
+    @sun.shadow.camera.left = -shadowCameraHalfSize
+    @sun.shadow.camera.right = shadowCameraHalfSize
+    @sun.shadow.camera.top = shadowCameraHalfSize
+    @sun.shadow.camera.bottom = -shadowCameraHalfSize
+    @sun.shadow.camera.near = 10
+    @sun.shadow.camera.far = 200
+    @sun.shadow.mapSize.width = 4096
+    @sun.shadow.mapSize.height = 4096
+    @sun.shadow.bias = -0.001
+    @scene.add @sun
+
+    @sunColors = for hexValue in [0, 0, 0xaf855e, 0xffffca, 0xffffca, 0xffffca, 0xeec137, 0xd86726, 0]
+      new THREE.Color hexValue
 
     # Create loading manager
     @loadingManager = new THREE.LoadingManager =>
@@ -185,8 +200,9 @@ class ProjectGaia
 
       @blocksInformationMaterial.update @simulationGameTime
       @blocksInformationTexture.update @simulationGameTime
-      @voxelWorldMaterial.update @simulationGameTime
-      @voxelWorldDepthMaterial.update @simulationGameTime
+
+    @voxelWorldMaterial.update gameTime
+    @voxelWorldDepthMaterial.update gameTime
 
     # Update controls on every frame.
     @controls.update gameTime
@@ -194,7 +210,30 @@ class ProjectGaia
   draw: (gameTime) ->
     return unless @initialized
 
+    # Update time of day.
+    timeOfDay = (0.35 + gameTime.totalGameTime * 0.003) % 1
+    
+    # Update sky colors.
+    skyColorIndex = Math.floor(timeOfDay * 8)
+    skyColorProgress = (timeOfDay * 8) % 1
+
+    @sky.color.copy(@skyColors.top[skyColorIndex]).lerp @skyColors.top[skyColorIndex + 1], skyColorProgress
+    @sky.groundColor.copy(@skyColors.bottom[skyColorIndex]).lerp @skyColors.bottom[skyColorIndex + 1], skyColorProgress
+
+    # Update sun position.
+    sunAngle = -Math.PI / 2 - timeOfDay * Math.PI * 2
+    sunDistance = (Math.sqrt(@worldSize.width ** 2, @worldSize.height ** 2) + @sun.shadow.camera.near) * 1.1
+    @sun.position.set Math.cos(sunAngle) * sunDistance, Math.sin(sunAngle) * sunDistance, sunDistance * 0.5
+    @sun.color.copy(@sunColors[skyColorIndex]).lerp @sunColors[skyColorIndex + 1], skyColorProgress
+
     @renderer.setRenderTarget null
+    @renderer.clear()
+
+    @voxelWorldMaterial.setWaterPass false
+    @renderer.shadowMap.needsUpdate = true
+    @renderer.render @scene, @camera
+
+    @voxelWorldMaterial.setWaterPass true
     @renderer.render @scene, @camera
 
 window.ProjectGaia = ProjectGaia

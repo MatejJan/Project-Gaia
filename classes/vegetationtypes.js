@@ -14,6 +14,8 @@
     TreeSoil1: null,
     TreeSoil2: null,
     TreeSoilSmall: null,
+    TreePalmDesert1: null,
+    TreePalmDesert2: null,
     ShrubAgave: null,
     ShrubAgave2: null,
     ShrubBlueberry: null,
@@ -25,7 +27,9 @@
     ShrubCushionPlants3: null,
     ShrubDwarfColumnar: null,
     ShrubElderberry: null,
-    ShrubSambucus: null
+    ShrubSambucus: null,
+    Cactus1: null,
+    Cactus2: null
   };
 
   vegetationTypeIndex = 1;

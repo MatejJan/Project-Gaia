@@ -28,9 +28,19 @@
           return THREE.ShaderChunk.voxelworld_pars_vertex = shaderChunk;
         };
       })(this));
+      new THREE.FileLoader(loadingManager).load('classes/materials/voxelworld-blockinformation.glsl', (function(_this) {
+        return function(shaderChunk) {
+          return THREE.ShaderChunk.voxelworld_blockinformation = shaderChunk;
+        };
+      })(this));
       new THREE.FileLoader(loadingManager).load('classes/materials/voxelworld-discardinvisible-vertex.glsl', (function(_this) {
         return function(shaderChunk) {
           return THREE.ShaderChunk.voxelworld_discardinvisible_vertex = shaderChunk;
+        };
+      })(this));
+      new THREE.FileLoader(loadingManager).load('classes/materials/voxelworld-waterwaves-vertex.glsl', (function(_this) {
+        return function(shaderChunk) {
+          return THREE.ShaderChunk.voxelworld_waterwaves_vertex = shaderChunk;
         };
       })(this));
       new THREE.FileLoader(loadingManager).load('classes/materials/computedtexture-common.glsl', (function(_this) {
@@ -55,6 +65,7 @@
         transparent: true,
         side: THREE.FrontSide,
         shadowSide: THREE.FrontSide,
+        wireframe: false,
         uniforms: _.extend({
           visualizeTemperature: {
             value: false
@@ -85,14 +96,26 @@
           },
           blockTypesCount: {
             value: _.keys(ProjectGaia.BlockTypes).length
+          },
+          drawWater: {
+            value: false
+          },
+          drawSolids: {
+            value: true
           }
         }, ProjectGaia.Materials.getTimeUniforms(), THREE.UniformsLib.lights),
+        defines: ProjectGaia.Materials.getTypeDefines(),
         vertexShader: this.constructor.vertexShader,
         fragmentShader: this.constructor.fragmentShader
       };
       VoxelWorld.__super__.constructor.call(this, parameters);
       this.options = options;
     }
+
+    VoxelWorld.prototype.setWaterPass = function(waterPass) {
+      this.uniforms.drawWater.value = waterPass;
+      return this.uniforms.drawSolids.value = !waterPass;
+    };
 
     VoxelWorld.prototype.update = function(gameTime) {
       ProjectGaia.Materials.updateTimeUniforms(this.uniforms, gameTime);

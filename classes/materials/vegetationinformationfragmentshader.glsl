@@ -39,19 +39,36 @@ bool isValidModelPosition(ivec3 modelVoxelPosition, ivec3 modelSize) {
          modelVoxelPosition.z >= 0 && modelVoxelPosition.z < modelSize.z;
 }
 
-ivec3 getRootVoxelPosition(int vegetationType) {
-  ivec3 modelSize = getModelSize(vegetationType);
-
-  // Root voxel is in the middle of the bottom layer.
-  return ivec3(modelSize.x / 2, 0, modelSize.z / 2);
-}
-
 int getMaterialForModel(int vegetationType, ivec3 position) {
   ivec3 modelSize = getModelSize(vegetationType);
   int voxelIndex = position.x + position.y * modelSize.x + position.z * modelSize.x * modelSize.y;
 
   vec2 uv = vec2((3.0 + float(voxelIndex)) / vegetationDataSize.x, (float(vegetationType) + 0.5) / vegetationDataSize.y);
   return int(texture2D(vegetationData, uv).a * 255.0);
+}
+
+ivec3 getRootVoxelPosition(int vegetationType) {
+  ivec3 modelSize = getModelSize(vegetationType);
+
+  // Root voxel is in the middle of the bottom layer.
+  ivec3 rootPosition = ivec3(modelSize.x / 2, 0, modelSize.z / 2);
+  if (getMaterialForModel(vegetationType, rootPosition) > 0) return rootPosition;
+
+  for (int dx = -1; dx <= 1; dx++) {
+    for (int dz = -1; dz <= 1; dz++) {
+      ivec3 offsetRootPosition = rootPosition + ivec3(dx, 0, dz);
+      if (isValidModelPosition(offsetRootPosition, modelSize) && getMaterialForModel(vegetationType, offsetRootPosition) > 0) return offsetRootPosition;
+    }
+  }
+
+  for (int dx = -2; dx <= 2; dx++) {
+    for (int dz = -2; dz <= 2; dz++) {
+      ivec3 offsetRootPosition = rootPosition + ivec3(dx, 0, dz);
+      if (isValidModelPosition(offsetRootPosition, modelSize) && getMaterialForModel(vegetationType, offsetRootPosition) > 0) return offsetRootPosition;
+    }
+  }
+
+  return rootPosition;
 }
 
 vec4 getOutputData(int vegetationType, ivec3 voxelPosition) {
@@ -104,6 +121,9 @@ void main() {
   ivec3 integerWorldSize = ivec3(worldSize);
 
   if (vegetationMaterial == 0 && blockMaterial == 0) {
+    int vegetationCount = 0;
+    ivec4 bottomBlockProperties;
+
     // Look at all neighbors to see if we can grow.
     for (int dx = -1; dx <= 1; dx++) {
       for (int dy = -1; dy <= 1; dy++) {
@@ -119,6 +139,8 @@ void main() {
           int neighborVegetationMaterial = neighborVegetationProperties.a;
 
           if (neighborVegetationMaterial > 0) {
+            vegetationCount++;
+
             // See if we should grow this turn.
             int distance = abs(dx) + abs(dy) + abs(dz);
             if (random(1) < 0.01 * float(4 - distance)) {
@@ -145,76 +167,87 @@ void main() {
           } else {
             // See if we're analyzing the neighbor beneath this block.
             if (dx == 0 && dy == -1 && dz == 0) {
-              // See if we should plant this turn.
-              ivec4 neighborBlockProperties = ivec4(texture2D(blocksInformation, neighborBlockCoordinates) * 255.0);
-              int neighborTemperature = neighborBlockProperties.g;
-              int neighborHumidity = neighborBlockProperties.b;
-
-              if (random(2) < 0.0002 * float(1 + min(neighborTemperature, neighborHumidity) + neighborHumidity / 2)) {
-                // Analyze the material we're growing on.
-                int neighborBlockMaterial = neighborBlockProperties.a;
-                int vegetationTypes[16];
-
-                if (neighborBlockMaterial == materialsFrozenRock || neighborBlockMaterial == materialsSnow) {
-                  vegetationTypes[0] = vegetationTreePineTundra;
-                  vegetationTypes[1] = vegetationShrubCushionPlants1;
-                  vegetationTypes[2] = vegetationShrubCushionPlants2;
-                  vegetationTypes[3] = vegetationShrubCushionPlants3;
-                  vegetationTypes[4] = vegetationTreePineTundra;
-                  vegetationTypes[5] = vegetationTreePineTundra;
-                  vegetationTypes[6] = vegetationTreePineTundra;
-                  vegetationTypes[7] = vegetationTreePineTundra;
-
-                } else if (neighborBlockMaterial == materialsSoil) {
-                  vegetationTypes[0] = vegetationTreeBirchSmall;
-                  vegetationTypes[1] = vegetationTreeBirchSmall2;
-                  vegetationTypes[2] = vegetationTreeOak;
-                  vegetationTypes[3] = vegetationTreeOakLarge;
-                  vegetationTypes[4] = vegetationTreeSoil1;
-                  vegetationTypes[5] = vegetationTreeSoil2;
-                  vegetationTypes[6] = vegetationTreeSoilSmall;
-                  vegetationTypes[7] = vegetationShrubSambucus;
-                  vegetationTypes[8] = vegetationShrubBlueberry;
-                  vegetationTypes[9] = vegetationShrubBush1;
-                  vegetationTypes[10] = vegetationShrubBush2;
-                  vegetationTypes[11] = vegetationShrubBushLong;
-                  vegetationTypes[12] = vegetationShrubElderberry;
-
-                } else if (neighborBlockMaterial == materialsGravel) {
-                  vegetationTypes[0] = vegetationShrubAgave;
-                  vegetationTypes[1] = vegetationShrubAgave2;
-                  vegetationTypes[2] = vegetationShrubCushionPlants1;
-                  vegetationTypes[3] = vegetationShrubCushionPlants2;
-                  vegetationTypes[4] = vegetationShrubCushionPlants3;
-                  vegetationTypes[5] = vegetationShrubBush1;
-                  vegetationTypes[6] = vegetationShrubBush2;
-                  vegetationTypes[7] = vegetationShrubDwarfColumnar;
-
-                } else if (neighborBlockMaterial == materialsSand) {
-                  vegetationTypes[0] = vegetationShrubAgave;
-                  vegetationTypes[1] = vegetationShrubAgave2;
-
-                } else if (neighborBlockMaterial == materialsMud) {
-                  vegetationTypes[0] = vegetationTreeOak;
-                  vegetationTypes[1] = vegetationTreeOakLarge;
-                  vegetationTypes[2] = vegetationTreeRainforest1;
-                  vegetationTypes[3] = vegetationShrubBush1;
-                  vegetationTypes[4] = vegetationShrubBush2;
-                  vegetationTypes[5] = vegetationShrubBushLong;
-                  vegetationTypes[6] = vegetationShrubSambucus;
-
-                } else {
-                  continue;
-                }
-
-                vegetationType = pickRandomVegetationType(vegetationTypes);
-                voxelPosition = getRootVoxelPosition(vegetationType);
-                gl_FragColor = getOutputData(vegetationType, voxelPosition);
-                return;
-              }
+              bottomBlockProperties = ivec4(texture2D(blocksInformation, neighborBlockCoordinates) * 255.0);
             }
           }
         }
+      }
+    }
+
+    // See if we should plant this turn.
+    int bottomTemperature = bottomBlockProperties.g;
+    int bottomHumidity = bottomBlockProperties.b;
+
+    float timeDelayFactor = min(1.0, -0.3 + totalGameTime * 0.1);
+
+    if (vegetationCount == 0 && random(2) < 0.0002 * timeDelayFactor * float(1 + min(bottomTemperature, bottomHumidity) + bottomHumidity / 2)) {
+      // Analyze the material we're growing on.
+      int neighborBlockMaterial = bottomBlockProperties.a;
+      int vegetationTypes[16];
+
+      bool canGrow = true;
+
+      if (neighborBlockMaterial == materialsFrozenRock || neighborBlockMaterial == materialsSnow) {
+        vegetationTypes[0] = vegetationTreePineTundra;
+        vegetationTypes[1] = vegetationShrubCushionPlants1;
+        vegetationTypes[2] = vegetationShrubCushionPlants2;
+        vegetationTypes[3] = vegetationShrubCushionPlants3;
+        vegetationTypes[4] = vegetationTreePineTundra;
+        vegetationTypes[5] = vegetationTreePineTundra;
+        vegetationTypes[6] = vegetationTreePineTundra;
+        vegetationTypes[7] = vegetationTreePineTundra;
+
+      } else if (neighborBlockMaterial == materialsSoil) {
+        vegetationTypes[0] = vegetationTreeBirchSmall;
+        vegetationTypes[1] = vegetationTreeBirchSmall2;
+        vegetationTypes[2] = vegetationTreeOak;
+        vegetationTypes[3] = vegetationTreeOakLarge;
+        vegetationTypes[4] = vegetationTreeSoil1;
+        vegetationTypes[5] = vegetationTreeSoil2;
+        vegetationTypes[6] = vegetationTreeSoilSmall;
+        vegetationTypes[7] = vegetationShrubSambucus;
+        vegetationTypes[8] = vegetationShrubBlueberry;
+        vegetationTypes[9] = vegetationShrubBush1;
+        vegetationTypes[10] = vegetationShrubBush2;
+        vegetationTypes[11] = vegetationShrubBushLong;
+        vegetationTypes[12] = vegetationShrubElderberry;
+
+      } else if (neighborBlockMaterial == materialsGravel) {
+        vegetationTypes[0] = vegetationShrubAgave;
+        vegetationTypes[1] = vegetationShrubAgave2;
+        vegetationTypes[2] = vegetationShrubCushionPlants1;
+        vegetationTypes[3] = vegetationShrubCushionPlants2;
+        vegetationTypes[4] = vegetationShrubCushionPlants3;
+        vegetationTypes[5] = vegetationShrubBush1;
+        vegetationTypes[6] = vegetationShrubBush2;
+        vegetationTypes[7] = vegetationShrubDwarfColumnar;
+
+      } else if (neighborBlockMaterial == materialsSand) {
+        vegetationTypes[0] = vegetationShrubAgave;
+        vegetationTypes[1] = vegetationShrubAgave2;
+        vegetationTypes[2] = vegetationCactus1;
+        vegetationTypes[3] = vegetationCactus2;
+        vegetationTypes[4] = vegetationTreePalmDesert1;
+        vegetationTypes[5] = vegetationTreePalmDesert2;
+
+      } else if (neighborBlockMaterial == materialsMud) {
+        vegetationTypes[0] = vegetationTreeOak;
+        vegetationTypes[1] = vegetationTreeOakLarge;
+        vegetationTypes[2] = vegetationTreeRainforest1;
+        vegetationTypes[3] = vegetationShrubBush1;
+        vegetationTypes[4] = vegetationShrubBush2;
+        vegetationTypes[5] = vegetationShrubBushLong;
+        vegetationTypes[6] = vegetationShrubSambucus;
+
+      } else {
+        canGrow = false;
+      }
+
+      if (canGrow) {
+        vegetationType = pickRandomVegetationType(vegetationTypes);
+        voxelPosition = getRootVoxelPosition(vegetationType);
+        gl_FragColor = getOutputData(vegetationType, voxelPosition);
+        return;
       }
     }
   }

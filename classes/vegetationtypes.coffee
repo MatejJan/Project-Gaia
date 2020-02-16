@@ -13,6 +13,8 @@ ProjectGaia.VegetationTypes =
   TreeSoil1: null
   TreeSoil2: null
   TreeSoilSmall: null
+  TreePalmDesert1: null
+  TreePalmDesert2: null
 
   # Shrubs
   ShrubAgave: null
@@ -27,6 +29,10 @@ ProjectGaia.VegetationTypes =
   ShrubDwarfColumnar: null
   ShrubElderberry: null
   ShrubSambucus: null
+
+  # Cactus
+  Cactus1: null
+  Cactus2: null
 
 vegetationTypeIndex = 1
 

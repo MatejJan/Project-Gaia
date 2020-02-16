@@ -1,10 +1,10 @@
-// Get block information for current block.
-ivec3 blockPosition = ivec3(blockCoordinates);
-vec4 blockInformation = texture2D(blocksInformation, getTextureCoordinatesForPosition(blockPosition));
-
 // See if the block is empty.
-int blockMaterial = int(blockInformation.a * 255.0);
-if (discardInvisible && blockMaterial == 0) {
+bool isEmpty= blockMaterial == materialsEmpty;
+bool isWater = blockMaterial == materialsWater || blockMaterial == materialsRain;
+bool isSolid = !isEmpty && !isWater;
+
+// Filter which blocks to draw.
+if (isEmpty && discardInvisible || isSolid && !drawSolids || isWater && !drawWater) {
   gl_Position = vec4(0);
   return;
 }
@@ -12,8 +12,12 @@ if (discardInvisible && blockMaterial == 0) {
 // See if the neighbor towards the vertex is facing is also full.
 ivec3 neighborPosition = ivec3(blockCoordinates + normal);
 int neighborBlockMaterial = getBlockMaterialForPosition(neighborPosition);
-if (neighborBlockMaterial > 0) {
-  // No need to draw this face since it's inside the model.
+bool neighborEmpty = neighborBlockMaterial == materialsEmpty;
+bool neighborIsWater = neighborBlockMaterial == materialsWater || neighborBlockMaterial == materialsRain;
+bool neighborIsSolid = !neighborEmpty && !neighborIsWater;
+
+// No need to draw faces between solids themselves and water blocks themselves.
+if (isSolid && neighborIsSolid || isWater && neighborIsWater) {
   gl_Position = vec4(0);
   return;
 }
