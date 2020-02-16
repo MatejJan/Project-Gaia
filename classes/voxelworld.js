@@ -145,12 +145,42 @@
     }
 
     VoxelWorld.load = function(loadingManager) {
-      var environmentNames, i, len, ref1, results, urlParameters, vegetationProperties, worldIndex;
-      environmentNames = ['32x32x32-materials', '40x40x40-island-soil-mud-lighthouse', '40x40x39-tunnel', '40x40x40-rock-canyon-sand-soil', '40x40x30-island-snow-rock', '120x120x60-city-barn-traintrack'];
+      var environment, environments, i, len, ref1, results, urlParameters, vegetationProperties, worldIndex;
+      environments = [
+        {
+          model: '32x32x32-materials',
+          audio: 'ocean',
+          volume: 1
+        }, {
+          model: '40x40x40-island-soil-mud-lighthouse',
+          audio: 'waves'
+        }, {
+          model: '40x40x39-tunnel',
+          audio: 'wind'
+        }, {
+          model: '40x40x40-rock-canyon-sand-soil',
+          audio: 'wind'
+        }, {
+          model: '40x40x30-island-snow-rock',
+          audio: 'polar'
+        }, {
+          model: '120x120x60-city-barn-traintrack',
+          audio: 'lake'
+        }
+      ];
       urlParameters = new URLSearchParams(window.location.search);
       worldIndex = urlParameters.get('world') || 0;
+      environment = environments[worldIndex];
+      if (environment.audio) {
+        this.audio = new ProjectGaia.AudioLoop({
+          url: "content/audio/" + environment.audio + ".mp3",
+          topVolume: environment.volume || 0.5,
+          crossoverDuration: 5,
+          loadingManager: loadingManager
+        });
+      }
       this.environmentModel = new ProjectGaia.VoxelModel({
-        url: "content/environments/" + environmentNames[worldIndex] + ".vox",
+        url: "content/environments/" + environment.model + ".vox",
         loadingManager: loadingManager
       });
       this.vegetationModels = [];
@@ -190,6 +220,7 @@
         }
       }
       this.startingBlocksInformationTexture = new THREE.DataTexture(blocksInformationArray, dataWidth, dataHeight, THREE.RGBAFormat);
+      this.audio = this.constructor.audio;
     }
 
     VoxelWorld.prototype.getBlockIndexForCoordinates = function(x, y, z) {

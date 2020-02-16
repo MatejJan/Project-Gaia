@@ -90,20 +90,41 @@ class ProjectGaia.VoxelWorld
      @VegetationProperties[vegetationTypeIndex] = modelName: _.kebabCase vegetationTypeName
 
   @load: (loadingManager) ->
-    environmentNames = [
-      '32x32x32-materials'
-      '40x40x40-island-soil-mud-lighthouse'
-      '40x40x39-tunnel'
-      '40x40x40-rock-canyon-sand-soil'
-      '40x40x30-island-snow-rock'
-      '120x120x60-city-barn-traintrack'
+    environments = [
+      model: '32x32x32-materials'
+      audio: 'ocean'
+      volume: 1
+    ,
+      model: '40x40x40-island-soil-mud-lighthouse'
+      audio: 'waves'
+    ,
+      model: '40x40x39-tunnel'
+      audio: 'wind'
+    ,
+      model: '40x40x40-rock-canyon-sand-soil'
+      audio: 'wind'
+    ,
+      model: '40x40x30-island-snow-rock'
+      audio: 'polar'
+    ,
+      model: '120x120x60-city-barn-traintrack'
+      audio: 'lake'
     ]
 
     urlParameters = new URLSearchParams window.location.search
     worldIndex = urlParameters.get('world') or 0
 
+    environment = environments[worldIndex]
+
+    if environment.audio
+      @audio = new ProjectGaia.AudioLoop
+        url: "content/audio/#{environment.audio}.mp3"
+        topVolume: environment.volume or 0.5
+        crossoverDuration: 5
+        loadingManager: loadingManager
+
     @environmentModel = new ProjectGaia.VoxelModel
-      url: "content/environments/#{environmentNames[worldIndex]}.vox"
+      url: "content/environments/#{environment.model}.vox"
       loadingManager: loadingManager
 
     @vegetationModels = []
@@ -136,6 +157,8 @@ class ProjectGaia.VoxelWorld
           blocksInformationArray[index + 3] = block.material
 
     @startingBlocksInformationTexture = new THREE.DataTexture blocksInformationArray, dataWidth, dataHeight, THREE.RGBAFormat
+
+    @audio = @constructor.audio
 
   getBlockIndexForCoordinates: (x, y, z) ->
     x + y * @options.width + z * @options.width * @options.height

@@ -6,7 +6,9 @@
   ProjectGaia = (function() {
     function ProjectGaia() {
       var createSkyColors, hexValue, shadowCameraHalfSize;
-      this.renderer = new THREE.WebGLRenderer;
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: true
+      });
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.autoClear = false;
       this.renderer.shadowMap.enabled = true;
@@ -14,6 +16,18 @@
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       this.renderer.setClearColor(new THREE.Color(0.05, 0.05, 0.1), 1);
       document.body.appendChild(this.renderer.domElement);
+      window.addEventListener('resize', (function(_this) {
+        return function() {
+          var ref, ref1;
+          if ((ref = _this.camera) != null) {
+            ref.aspect = window.innerWidth / window.innerHeight;
+          }
+          if ((ref1 = _this.camera) != null) {
+            ref1.updateProjectionMatrix();
+          }
+          return _this.renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+      })(this), false);
       this.scene = new THREE.Scene;
       this.sky = new THREE.HemisphereLight;
       this.scene.add(this.sky);
@@ -70,10 +84,16 @@
           return console.log("Loading error with", url);
         };
       })(this));
+      this.started = false;
       ProjectGaia.Materials.VoxelWorld.load(this.loadingManager);
       ProjectGaia.Materials.BlocksInformation.load(this.loadingManager);
       ProjectGaia.Materials.VegetationInformation.load(this.loadingManager);
       ProjectGaia.VoxelWorld.load(this.loadingManager);
+      this.music = new ProjectGaia.AudioLoop({
+        url: "content/audio/music.mp3",
+        topVolume: 0.2,
+        loadingManager: this.loadingManager
+      });
     }
 
     ProjectGaia.prototype.initialize = function() {
@@ -137,11 +157,14 @@
       this.voxelMesh.castShadow = true;
       this.voxelMesh.receiveShadow = true;
       this.voxelMesh.customDepthMaterial = this.voxelWorldDepthMaterial;
-      this.voxelMesh.position.set(-this.worldSize.width / 2, -10, -this.worldSize.depth / 2);
+      this.voxelMesh.position.set(-this.worldSize.width / 2, -this.worldSize.height / 2 + 10, -this.worldSize.depth / 2);
       this.scene.add(this.voxelMesh);
       this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 400);
-      this.camera.position.set(-this.worldSize.depth * 1.2, this.worldSize.height, this.worldSize.depth * 1.2);
+      this.camera.position.set(-this.worldSize.depth * 1.5, this.worldSize.height * 0.9, this.worldSize.depth * 1.5);
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+      this.controls.enableDamping = true;
+      this.controls.autoRotate = true;
+      this.controls.autoRotateSpeed = 0.15;
       document.addEventListener('keypress', (function(_this) {
         return function(event) {
           switch (event.keyCode) {
@@ -149,7 +172,14 @@
               return _this.voxelWorldMaterial.uniforms.visualizeHumidity.value = !_this.voxelWorldMaterial.uniforms.visualizeHumidity.value;
             case 116:
               return _this.voxelWorldMaterial.uniforms.visualizeTemperature.value = !_this.voxelWorldMaterial.uniforms.visualizeTemperature.value;
+            case 99:
+              return _this.controls.autoRotate = !_this.controls.autoRotate;
           }
+        };
+      })(this));
+      this.renderer.domElement.addEventListener('click', (function(_this) {
+        return function(event) {
+          return _this.controls.autoRotate = false;
         };
       })(this));
       this.simulationAccumulatedTime = 0;
@@ -165,27 +195,77 @@
       return this.initialized = true;
     };
 
+    ProjectGaia.prototype.start = function() {
+      var ref;
+      this.started = true;
+      this.audioLoops = [this.music];
+      if (this.voxelWorld.audio) {
+        this.audioLoops.push(this.voxelWorld.audio);
+      }
+      if ((ref = this.voxelWorld.audio) != null) {
+        ref.play();
+      }
+      return setTimeout((function(_this) {
+        return function() {
+          return _this.music.play();
+        };
+      })(this), 3000);
+    };
+
+    ProjectGaia.prototype.mute = function() {
+      var audioLoop, i, len, ref, results;
+      ref = this.audioLoops;
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        audioLoop = ref[i];
+        results.push(audioLoop.mute());
+      }
+      return results;
+    };
+
+    ProjectGaia.prototype.unmute = function() {
+      var audioLoop, i, len, ref, results;
+      ref = this.audioLoops;
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        audioLoop = ref[i];
+        results.push(audioLoop.unmute());
+      }
+      return results;
+    };
+
     ProjectGaia.prototype.update = function(gameTime) {
+      var audioLoop, i, len, ref;
       if (!this.initialized) {
         return;
       }
-      this.vegetationAccumulatedTime += gameTime.elapsedGameTime;
-      if (this.vegetationAccumulatedTime > this.vegetationUpdateGameTime.elapsedGameTime) {
-        this.vegetationAccumulatedTime -= this.vegetationUpdateGameTime.elapsedGameTime;
-        this.vegetationUpdateGameTime.totalGameTime += this.vegetationUpdateGameTime.elapsedGameTime;
-        this.vegetationInformationMaterial.update(this.vegetationUpdateGameTime);
-        this.vegetationInformationTexture.update(this.vegetationUpdateGameTime);
+      if (this.started) {
+        this.vegetationAccumulatedTime += gameTime.elapsedGameTime;
+        if (this.vegetationAccumulatedTime > this.vegetationUpdateGameTime.elapsedGameTime) {
+          this.vegetationAccumulatedTime -= this.vegetationUpdateGameTime.elapsedGameTime;
+          this.vegetationUpdateGameTime.totalGameTime += this.vegetationUpdateGameTime.elapsedGameTime;
+          this.vegetationInformationMaterial.update(this.vegetationUpdateGameTime);
+          this.vegetationInformationTexture.update(this.vegetationUpdateGameTime);
+        }
+        this.simulationAccumulatedTime += gameTime.elapsedGameTime;
+        if (this.simulationAccumulatedTime > this.simulationGameTime.elapsedGameTime) {
+          this.simulationAccumulatedTime -= this.simulationGameTime.elapsedGameTime;
+          this.simulationGameTime.totalGameTime += this.simulationGameTime.elapsedGameTime;
+          this.blocksInformationMaterial.update(this.simulationGameTime);
+          this.blocksInformationTexture.update(this.simulationGameTime);
+        }
+        ref = this.audioLoops;
+        for (i = 0, len = ref.length; i < len; i++) {
+          audioLoop = ref[i];
+          audioLoop.update(gameTime);
+        }
+        this.controls.update(gameTime);
       }
-      this.simulationAccumulatedTime += gameTime.elapsedGameTime;
-      if (this.simulationAccumulatedTime > this.simulationGameTime.elapsedGameTime) {
-        this.simulationAccumulatedTime -= this.simulationGameTime.elapsedGameTime;
-        this.simulationGameTime.totalGameTime += this.simulationGameTime.elapsedGameTime;
-        this.blocksInformationMaterial.update(this.simulationGameTime);
-        this.blocksInformationTexture.update(this.simulationGameTime);
+      if (this.started || !this.updatedOnce) {
+        this.voxelWorldMaterial.update(gameTime);
+        this.voxelWorldDepthMaterial.update(gameTime);
+        return this.updatedOnce = true;
       }
-      this.voxelWorldMaterial.update(gameTime);
-      this.voxelWorldDepthMaterial.update(gameTime);
-      return this.controls.update(gameTime);
     };
 
     ProjectGaia.prototype.draw = function(gameTime) {

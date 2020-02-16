@@ -3,7 +3,7 @@
 class ProjectGaia
   constructor: ->
     # Create the renderer.
-    @renderer = new THREE.WebGLRenderer
+    @renderer = new THREE.WebGLRenderer antialias: true
     @renderer.setSize window.innerWidth, window.innerHeight
     @renderer.autoClear = false
     @renderer.shadowMap.enabled = true
@@ -11,6 +11,14 @@ class ProjectGaia
     @renderer.shadowMap.type = THREE.PCFSoftShadowMap
     @renderer.setClearColor new THREE.Color(0.05, 0.05, 0.1), 1
     document.body.appendChild @renderer.domElement
+
+    window.addEventListener 'resize', =>
+      @camera?.aspect = window.innerWidth / window.innerHeight;
+      @camera?.updateProjectionMatrix();
+
+      @renderer.setSize(window.innerWidth, window.innerHeight);
+    ,
+      false
 
     # Create the scene.
     @scene = new THREE.Scene
@@ -58,11 +66,19 @@ class ProjectGaia
     (url) =>
           console.log "Loading error with", url
 
+    @started = false
+
     # Load assets.
     ProjectGaia.Materials.VoxelWorld.load @loadingManager
     ProjectGaia.Materials.BlocksInformation.load @loadingManager
     ProjectGaia.Materials.VegetationInformation.load @loadingManager
     ProjectGaia.VoxelWorld.load @loadingManager
+
+    # Load music.
+    @music = new ProjectGaia.AudioLoop
+      url: "content/audio/music.mp3"
+      topVolume: 0.2
+      loadingManager: @loadingManager
 
   initialize: ->
     # Determine world size.
@@ -143,23 +159,32 @@ class ProjectGaia
     @voxelMesh.castShadow = true
     @voxelMesh.receiveShadow = true
     @voxelMesh.customDepthMaterial = @voxelWorldDepthMaterial
-    @voxelMesh.position.set -@worldSize.width / 2, -10, -@worldSize.depth / 2
+    @voxelMesh.position.set -@worldSize.width / 2, -@worldSize.height / 2 + 10, -@worldSize.depth / 2
     @scene.add @voxelMesh
 
     # Create the camera.
     @camera = new THREE.PerspectiveCamera 45, window.innerWidth / window.innerHeight, 1, 400
-    @camera.position.set -@worldSize.depth * 1.2, @worldSize.height, @worldSize.depth * 1.2
+    @camera.position.set -@worldSize.depth * 1.5, @worldSize.height * 0.9, @worldSize.depth * 1.5
 
     # Create controls.
     @controls = new THREE.OrbitControls @camera, @renderer.domElement
+    @controls.enableDamping = true
+    @controls.autoRotate = true
+    @controls.autoRotateSpeed = 0.15
 
     document.addEventListener 'keypress', (event) =>
       switch event.keyCode
-        when 104
+        when 104 # h
           @voxelWorldMaterial.uniforms.visualizeHumidity.value = not @voxelWorldMaterial.uniforms.visualizeHumidity.value
 
-        when 116
+        when 116 # t
           @voxelWorldMaterial.uniforms.visualizeTemperature.value = not @voxelWorldMaterial.uniforms.visualizeTemperature.value
+
+        when 99 # c
+          @controls.autoRotate = not @controls.autoRotate
+
+    @renderer.domElement.addEventListener 'click', (event) =>
+      @controls.autoRotate = false
 
     # Prepare time keeping.
     @simulationAccumulatedTime = 0
@@ -178,37 +203,64 @@ class ProjectGaia
     # We have completed initialization.
     @initialized = true
 
+  start: ->
+    @started = true
+
+    @audioLoops = [@music]
+    @audioLoops.push @voxelWorld.audio if @voxelWorld.audio
+
+    @voxelWorld.audio?.play()
+
+    setTimeout =>
+      @music.play()
+    ,
+      3000
+
+  mute: ->
+    audioLoop.mute() for audioLoop in @audioLoops
+
+  unmute: ->
+    audioLoop.unmute() for audioLoop in @audioLoops
+
   update: (gameTime) ->
     return unless @initialized
 
-    # Update vegetation in between simulation updates.
-    @vegetationAccumulatedTime += gameTime.elapsedGameTime
+    if @started
+      # Update vegetation in between simulation updates.
+      @vegetationAccumulatedTime += gameTime.elapsedGameTime
 
-    if @vegetationAccumulatedTime > @vegetationUpdateGameTime.elapsedGameTime
-      @vegetationAccumulatedTime -= @vegetationUpdateGameTime.elapsedGameTime
-      @vegetationUpdateGameTime.totalGameTime += @vegetationUpdateGameTime.elapsedGameTime
+      if @vegetationAccumulatedTime > @vegetationUpdateGameTime.elapsedGameTime
+        @vegetationAccumulatedTime -= @vegetationUpdateGameTime.elapsedGameTime
+        @vegetationUpdateGameTime.totalGameTime += @vegetationUpdateGameTime.elapsedGameTime
 
-      @vegetationInformationMaterial.update @vegetationUpdateGameTime
-      @vegetationInformationTexture.update @vegetationUpdateGameTime
+        @vegetationInformationMaterial.update @vegetationUpdateGameTime
+        @vegetationInformationTexture.update @vegetationUpdateGameTime
 
-    # Update blocks simulation.
-    @simulationAccumulatedTime += gameTime.elapsedGameTime
+      # Update blocks simulation.
+      @simulationAccumulatedTime += gameTime.elapsedGameTime
 
-    if @simulationAccumulatedTime > @simulationGameTime.elapsedGameTime
-      @simulationAccumulatedTime -= @simulationGameTime.elapsedGameTime
-      @simulationGameTime.totalGameTime += @simulationGameTime.elapsedGameTime
+      if @simulationAccumulatedTime > @simulationGameTime.elapsedGameTime
+        @simulationAccumulatedTime -= @simulationGameTime.elapsedGameTime
+        @simulationGameTime.totalGameTime += @simulationGameTime.elapsedGameTime
 
-      @blocksInformationMaterial.update @simulationGameTime
-      @blocksInformationTexture.update @simulationGameTime
+        @blocksInformationMaterial.update @simulationGameTime
+        @blocksInformationTexture.update @simulationGameTime
 
-    @voxelWorldMaterial.update gameTime
-    @voxelWorldDepthMaterial.update gameTime
+      # Update audio.
+      audioLoop.update gameTime for audioLoop in @audioLoops
 
-    # Update controls on every frame.
-    @controls.update gameTime
+      # Update controls on every frame.
+      @controls.update gameTime
+
+    if @started or not @updatedOnce
+      @voxelWorldMaterial.update gameTime
+      @voxelWorldDepthMaterial.update gameTime
+      @updatedOnce = true
 
   draw: (gameTime) ->
     return unless @initialized
+
+    # Update time when the game was started.
 
     # Update time of day.
     timeOfDay = (0.35 + gameTime.totalGameTime * 0.003) % 1

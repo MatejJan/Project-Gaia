@@ -2,10 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Project Gaia // Voxel world simulation prototype</title>
+  <title>Project Gaia // Voxel world nature simulation</title>
   <link href="style.css" rel="stylesheet"/>
 </head>
 <body>
+  <button class="start-button">▶︎</button>
+
+  <div class="worlds start">
+    <a class="world-link" href="?world=1">1</a><!--
+    --><a class="world-link" href="?world=2">2</a><!--
+    --><a class="world-link" href="?world=3">3</a><!--
+    --><a class="world-link" href="?world=4">4</a><!--
+    --><a class="world-link" href="?world=5">5</a><!--
+    --><a class="world-link about" href="https://github.com/MatejJan/Project-Gaia" target="_blank">?</a>
+  </div>
+
+  <div class="controls fade-out">
+    <button class="audio-button">♫</button><!--
+    --><button class="fullscreen-button">⤡</button>
+  </div>
+
   <script src="libraries/lodash.min.js"></script>
   <script src="libraries/three.min.js"></script>
   <script src="libraries/vox.min.js"></script>
@@ -22,6 +38,7 @@
   <script src="classes/voxelworld.js"></script>
   <script src="classes/materialsdatatexture.js"></script>
   <script src="classes/vegetationdatatexture.js"></script>
+  <script src="classes/audioloop.js"></script>
 
   <script src="classes/materials/materials.js"></script>
   <script src="classes/materials/voxelworld.js"></script>

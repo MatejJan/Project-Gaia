@@ -1,4 +1,100 @@
 html
 body
   margin 0
+  width 100%
+  height 100%
   background slategrey
+  cursor default
+  font-family sans-serif
+
+  .start-button
+    display block
+    position fixed
+    color white
+    border none
+    opacity 0.5
+    top 0
+    left 0
+    width 100%
+    height 100%
+    z-index 2
+    background black
+    transition opacity 1s
+    transform translateZ(0)
+    font-size 100px
+
+    &.fade-out
+      opacity 0
+
+  .worlds
+    position fixed
+    left 0
+    bottom 0
+    z-index 3
+    opacity 0.05
+    padding 10px
+    transition opacity 0.5s
+
+    &.fade-out
+      opacity 0
+
+    &:hover
+    &.start
+      opacity 0.3
+
+    .world-link
+      display inline-block
+      width 30px
+      height 30px
+      z-index 2
+      background transparent
+      border none
+      color white
+      cursor pointer
+      font-size 16px
+      text-decoration none
+      text-align center
+      opacity 0.5
+      transition opacity 0.2s
+
+      &:hover
+        opacity 1
+
+      &:focus
+        outline none
+
+  .controls
+    position fixed
+    right 0
+    bottom 0
+    z-index 1
+    opacity 0.15
+    padding 10px
+    transition opacity 0.5s
+
+    &.fade-out
+      opacity 0
+
+    &:hover
+      opacity 0.3
+
+    button
+      width 40px
+      height 40px
+      z-index 2
+      background transparent
+      border none
+      color white
+      cursor pointer
+      font-size 20px
+      opacity 0.5
+      transition opacity 0.2s
+
+      &:hover
+        opacity 1
+
+      &:focus
+        outline none
+
+    .audio-button.off
+      text-decoration line-through

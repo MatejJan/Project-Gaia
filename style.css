@@ -1,5 +1,117 @@
 html,
 body {
   margin: 0;
+  width: 100%;
+  height: 100%;
   background: #708090;
+  cursor: default;
+  font-family: sans-serif;
+}
+html .start-button,
+body .start-button {
+  display: block;
+  position: fixed;
+  color: #fff;
+  border: none;
+  opacity: 0.5;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background: #000;
+  transition: opacity 1s;
+  transform: translateZ(0);
+  font-size: 100px;
+}
+html .start-button.fade-out,
+body .start-button.fade-out {
+  opacity: 0;
+}
+html .worlds,
+body .worlds {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 3;
+  opacity: 0.05;
+  padding: 10px;
+  transition: opacity 0.5s;
+}
+html .worlds.fade-out,
+body .worlds.fade-out {
+  opacity: 0;
+}
+html .worlds:hover,
+body .worlds:hover,
+html .worlds.start,
+body .worlds.start {
+  opacity: 0.3;
+}
+html .worlds .world-link,
+body .worlds .world-link {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  text-decoration: none;
+  text-align: center;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+html .worlds .world-link:hover,
+body .worlds .world-link:hover {
+  opacity: 1;
+}
+html .worlds .world-link:focus,
+body .worlds .world-link:focus {
+  outline: none;
+}
+html .controls,
+body .controls {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  opacity: 0.15;
+  padding: 10px;
+  transition: opacity 0.5s;
+}
+html .controls.fade-out,
+body .controls.fade-out {
+  opacity: 0;
+}
+html .controls:hover,
+body .controls:hover {
+  opacity: 0.3;
+}
+html .controls button,
+body .controls button {
+  width: 40px;
+  height: 40px;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 20px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+html .controls button:hover,
+body .controls button:hover {
+  opacity: 1;
+}
+html .controls button:focus,
+body .controls button:focus {
+  outline: none;
+}
+html .controls .audio-button.off,
+body .controls .audio-button.off {
+  text-decoration: line-through;
 }
