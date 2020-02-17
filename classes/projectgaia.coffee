@@ -170,7 +170,7 @@ class ProjectGaia
     @controls = new THREE.OrbitControls @camera, @renderer.domElement
     @controls.enableDamping = true
     @controls.autoRotate = true
-    @controls.autoRotateSpeed = 0.15
+    @controls.autoRotateSpeed = 0.12
 
     document.addEventListener 'keypress', (event) =>
       switch event.keyCode
@@ -250,7 +250,7 @@ class ProjectGaia
       audioLoop.update gameTime for audioLoop in @audioLoops
 
       # Update controls on every frame.
-      @controls.update gameTime
+      @controls.update gameTime.elapsedGameTime
 
     if @started or not @updatedOnce
       @voxelWorldMaterial.update gameTime

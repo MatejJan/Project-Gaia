@@ -112,7 +112,7 @@ class ProjectGaia.VoxelWorld
     ]
 
     urlParameters = new URLSearchParams window.location.search
-    worldIndex = urlParameters.get('world') or 0
+    worldIndex = urlParameters.get('world') or 1
 
     environment = environments[worldIndex]
 

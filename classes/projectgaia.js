@@ -164,7 +164,7 @@
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
       this.controls.autoRotate = true;
-      this.controls.autoRotateSpeed = 0.15;
+      this.controls.autoRotateSpeed = 0.12;
       document.addEventListener('keypress', (function(_this) {
         return function(event) {
           switch (event.keyCode) {
@@ -259,7 +259,7 @@
           audioLoop = ref[i];
           audioLoop.update(gameTime);
         }
-        this.controls.update(gameTime);
+        this.controls.update(gameTime.elapsedGameTime);
       }
       if (this.started || !this.updatedOnce) {
         this.voxelWorldMaterial.update(gameTime);

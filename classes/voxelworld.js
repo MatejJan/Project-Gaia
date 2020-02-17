@@ -169,7 +169,7 @@
         }
       ];
       urlParameters = new URLSearchParams(window.location.search);
-      worldIndex = urlParameters.get('world') || 0;
+      worldIndex = urlParameters.get('world') || 1;
       environment = environments[worldIndex];
       if (environment.audio) {
         this.audio = new ProjectGaia.AudioLoop({
