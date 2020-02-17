@@ -151,7 +151,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 			// angle from z-axis around y-axis
 			spherical.setFromVector3( offset );
 
-			if ( scope.autoRotate && state === STATE.NONE ) {
+			if ( scope.autoRotate && state === STATE.NONE && elapsed) {
 
 				rotateLeft( getAutoRotationAngle(elapsed) );
 
