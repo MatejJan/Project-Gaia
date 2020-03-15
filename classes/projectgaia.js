@@ -7,7 +7,8 @@
     function ProjectGaia() {
       var createSkyColors, hexValue, shadowCameraHalfSize;
       this.renderer = new THREE.WebGLRenderer({
-        antialias: true
+        antialias: true,
+        powerPreference: 'high-performance'
       });
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.autoClear = false;

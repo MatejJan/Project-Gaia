@@ -3,7 +3,10 @@
 class ProjectGaia
   constructor: ->
     # Create the renderer.
-    @renderer = new THREE.WebGLRenderer antialias: true
+    @renderer = new THREE.WebGLRenderer
+      antialias: true
+      powerPreference: 'high-performance'
+
     @renderer.setSize window.innerWidth, window.innerHeight
     @renderer.autoClear = false
     @renderer.shadowMap.enabled = true
